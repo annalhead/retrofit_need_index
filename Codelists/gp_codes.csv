@@ -1,0 +1,544 @@
+SnomedCT_ConceptID,description,condition
+70747007,"Single major depressive episode, partial or unspecied remission",gp_cmd
+764691000000109,"Recurrent major depressive episodes, partial/unspecified remission",gp_cmd
+765176007,"Recurrent depressive disorder, current episode severe with psychotic symptoms",gp_cmd
+292601005,"[X]Antiasthmatics adv eff,NEC",gp_asthma
+170635006,Asthma not disturbing sleep,gp_asthma
+185737001,Asthma monitoring deleted,gp_asthma
+713701000000108,Asthma monitoring admin.NOS,gp_asthma
+171231001,Asthma screening,gp_asthma
+195213000,Cerebellar stroke syndrome,gp_cvd
+233826005,Acute non-Q wave infarction - anteroseptal,gp_cvd
+315287002,Diabetes mellitus insulin-glucose infusion in acute myocardial infarction,gp_cvd
+443502000,Coronary atherosclerosis,gp_cvd
+62695002,Acute anteroseptal myocardial infarction,gp_cvd
+1084061000000106,[X]Dysthymia,gp_cmd
+191604000,Severe depressive episode with psychotic symptoms,gp_cmd
+307077003,loss of hope for the future,gp_cmd
+366979004,depressed mood,gp_cmd
+395017009,c/o - panic attack,gp_cmd
+413972000,Depression annual review,gp_cmd
+417676004,o/e - panic attack,gp_cmd
+717021000000106,Chronic obstructive pulmonary disease monitoring 2nd letter,gp_copd
+723245007,Number of COPD exacerbations in past year,gp_copd
+370219009,Moderate asthma,gp_asthma
+170655007,Asthma restricts exercise,gp_asthma
+1066231000000103,COPD monitoring email invitation,gp_copd
+12295008,Bronchiectasis NOS,gp_copd
+13645005,Other specified chronic obstructive pulmonary disease,gp_copd
+195960004,(Bullous emphysema with collapse) or (tension pneumatocoele),gp_copd
+201671000000104,Home oxygen supply - cylinder,gp_copd
+204991000000107,Suspected chronic obstructive pulmonary disease,gp_copd
+395159008,Chronic obstructive pulmonary disease leaflet given,gp_copd
+708038006,Asthma attack,gp_asthma
+161105008,Asthma society member,gp_asthma
+407674008,Aspirin induced asthma,gp_asthma
+201201000000105,Asthma trigger - damp,gp_asthma
+201051000000101,Asthma trigger - animals,gp_asthma
+194849004,Ischaemic cardiomyopathy,gp_cvd
+233822007,Ischaemic cardiomyopathy,gp_cvd
+233827001,Acute Q wave infarction - anterolateral,gp_cvd
+304914007,Acute Q wave myocardial infarction,gp_cvd
+366874008,Num asthm exacs in past year,gp_asthma
+1086471000000103,"Recurrent depressive disorder, current episode severe with psychotic symptoms",gp_cmd
+191724005,"social phobia-eating in public | social phobia, fear of eating in public",gp_cmd
+192045005,acute stress reaction nos,gp_cmd
+231499006,Single major depressive episode,gp_cmd
+310496002,[X]Moderate depressive episode,gp_cmd
+58963008,acrophobia,gp_cmd
+198971000000102,Asthma outreach clinic,gp_asthma
+183478001,"Emergency admission, asthma",gp_asthma
+71892000,Left ventricular failure,gp_asthma
+66344007,"[X]Recurrent depressive disorder, current episode severe without psychotic  symptoms",gp_cmd
+764639002,Antidepress drug treat started,gp_cmd
+823501000000106,Antidepress drug treat changed,gp_cmd
+292545003,"[X]Antiasthmatics adv eff,NEC",gp_asthma
+406162001,Asthma management plan given,gp_asthma
+170634005,Asthma disturbs sleep freqntly,gp_asthma
+811961000000106,COPD self-management plan agreed,gp_copd
+85915003,Laryngotracheobronchitis,gp_copd
+312453004,Asthma - currently active,gp_asthma
+1066841000000108,COPD monitoring SMS text message second invitation,gp_copd
+170621009,Home oxygen supply stopped,gp_copd
+195951007,Acute exacerbation of chronic obstructive airways disease,gp_copd
+196144009,Acute interstitial emphysema,gp_copd
+268512000,Home oxygen supply,gp_copd
+313296004,Mild chronic obstructive pulmonary disease,gp_copd
+371611000000107,COPD patient unsuitable for pulmonary rehabilitation,gp_copd
+405944004,Wheezy bronchitis,gp_copd
+4981000,Panlobular emphysema,gp_copd
+268511007,Respiratory disease monitoring,gp_asthma
+811921000000103,Asthma self-manage plan agreed,gp_asthma
+340891000000106,Asthma trigger - airborne dust,gp_asthma
+811151000000105,Num dy abs sch asthma pst 6 mn,gp_asthma
+195201005,Multiple and bilateral precerebral artery syndromes,gp_cvd
+233838001,Acute posterior myocardial infarction,gp_cvd
+394710008,First myocardial infarction,gp_cvd
+5370000,Atrial flutter,gp_cvd
+95460007,Cerebellar infarction,gp_cvd
+370203002,Asthma day symp 1-2 per week,gp_asthma
+390878008,Step down chnge asthm manag pl,gp_asthma
+191599006,Single major depressive episode,gp_cmd
+191722009,agoraphobia with panic attacks,gp_cmd
+251000119105,"Single major depressive episode, severe, without psychosis",gp_cmd
+58703003,Neurotic depression reactive type,gp_cmd
+763221007,Refuses asthma monitoring,gp_asthma
+185730004,Asthma monitor offer default,gp_asthma
+185732007,Asthma monitor 2nd letter,gp_asthma
+185734008,Asthma monitor 3rd letter,gp_asthma
+717291000000103,Except asthma qual ind: Pt uns,gp_asthma
+40541001,Left ventricular failure,gp_asthma
+708094006,Intrinsic asthma + status,gp_asthma
+741056003,Health education - chronic obstructive pulmonary disease,gp_copd
+708358003,Emerg asthm adm since lst appt,gp_asthma
+195947005,Mucopurulent chronic bronchitis,gp_copd
+195959009,Zonal bullous emphysema,gp_copd
+196027008,Toxic bronchiolitis obliterans,gp_copd
+233672007,Byssinosis grade 3,gp_copd
+390941006,Chronic obstructive pulmonary disease monitoring due,gp_copd
+713731000000102,Chronic obstructive pulmonary disease monitoring admin,gp_copd
+275908000,Respiratory disease monitoring,gp_asthma
+225057002,Brittle asthma,gp_asthma
+162660004,Asthma resolved,gp_asthma
+201041000000104,Asthma trigger - seasonal,gp_asthma
+201191000000108,Asthma trigger - cold air,gp_asthma
+754061000000100,Asthma review RCP 3 questions,gp_asthma
+194867006,Rupture of papillary muscle as current complication following acute myocardial infarction,gp_cvd
+195189003,Cerebral infarction due to thrombosis of cerebral arteries,gp_cvd
+370202007,Asthma day symp 1-2 per mth,gp_asthma
+390872009,Change in asthma managemt plan,gp_asthma
+771901000000100,Asthma night symptom 1 to 2 wk,gp_asthma
+905271000000101,Childhood Asthma Control Test,gp_asthma
+791401000000104,Seen in school asthma clinic,gp_asthma
+102912007,fear of death,gp_cmd
+11806006,separation anxiety disorder,gp_cmd
+13438001,child/adolesc.overanxious.dis. | childhood and adolescent overanxiousness disturbance,gp_cmd
+191659001,[X]Other depressive episodes,gp_cmd
+191728008,fear of crowds,gp_cmd
+231504006,[X]Mixed anxiety and depressive disorder,gp_cmd
+231507004,acute stress reaction nos,gp_cmd
+247796005,loss of capacity for enjoyment,gp_cmd
+28475009,"Recurrent depressive disorder, current episode severe with psychotic symptoms",gp_cmd
+310495003,"[X]Recurrent depressive disorder, current episode mild",gp_cmd
+36474008,"[X]Recurrent depressive disorder, current episode severe without psychotic  symptoms",gp_cmd
+394720003,Asthma medication review,gp_asthma
+67431008,[x]predom compuls acts/ritual | [x]predominantly compulsive acts [obsessional rituals],gp_cmd
+832007,"[x]major depression, moder sev | [x]major depression, moderately severe",gp_cmd
+219036002,"[X]Antiasthmatics adv eff,NEC",gp_asthma
+41553006,Detergent asthma,gp_asthma
+292617004,AR - theophylline (asthma),gp_asthma
+716358000,Telehealth chronic obstructive pulmonary disease monitoring,gp_copd
+810951000000101,COPD self-management plan review,gp_copd
+16003001,Giant bullous emphysema,gp_copd
+170628003,Airways obstructn irreversible,gp_copd
+195963002,Acute vesicular emphysema,gp_copd
+195984007,Recurrent bronchiectasis,gp_copd
+275528007,H/O: bronchitis,gp_copd
+285381006,Acute infective exacerbation of chronic obstructive airways disease,gp_copd
+375911000000102,COPD structured smoking assessment declined,gp_copd
+47895001,Congenital lobar emphysema,gp_copd
+60427004,Interstitial emphysema,gp_copd
+170631002,Asthma disturbing sleep,gp_asthma
+194866002,Rupture of chordae tendinae as current complication following acute myocardial infarction,gp_cvd
+233829003,Acute Q wave infarction - inferior,gp_cvd
+308065005,H/O: Myocardial infarction in last year,gp_cvd
+371040005,Cerebral infarction due to thrombosis of cerebral arteries,gp_cvd
+413838009,Other chronic ischaemic heart disease NOS,gp_cvd
+370206005,Asthma limits walking on flat,gp_asthma
+390921001,Absent work/schl due to asthma,gp_asthma
+191608002,Recurrent major depressive episode,gp_cmd
+228560001,anxiety management training,gp_cmd
+36923009,Single major depressive episode NOS,gp_cmd
+386810004,phobic disorders,gp_cmd
+417523004,loss of inter prev enjoy activ | loss of interest in previously enjoyable activity,gp_cmd
+195967001,Asthma,gp_asthma
+12428000,Intrinsic asthma - no status,gp_asthma
+67698009,[x]predom obsessional thoughts | [x]predominantly obsessional thoughts or ruminations,gp_cmd
+699241002,Chronic post-traumatic stress disorder following military combat,gp_cmd
+78667006,[X]Dysthymia,gp_cmd
+170637003,Asthma limiting activities,gp_asthma
+74417001,Mucopurulent chronic bronchitis,gp_copd
+820341000000109,Chronic obstructive pulmonary disease rescue pack not indicated,gp_copd
+826111000000109,On chronic obstructive pulmonary disease supprtv cre pathway,gp_copd
+857661000000104,Seen in chronic obstructive pulmonary disease clinic,gp_copd
+195949008,Chronic wheezy bronchitis,gp_copd
+198901000000105,Multiple COPD emergency hospital admissions,gp_copd
+233675009,Toxic emphysema,gp_copd
+293991000000106,Very severe chronic obstructive pulmonary disease,gp_copd
+360470001,Simple chronic bronchitis,gp_copd
+394702007,COAD follow-up,gp_copd
+527361000000107,Chronic obstructive pulmonary disease assessment test,gp_copd
+704121003,Step up change in COPD management plan,gp_copd
+708038006,Acute exacerbation of asthma,gp_asthma
+389145006,Asthma NOS,gp_asthma
+448003001,RCP asth assess 3 quest score,gp_asthma
+445531003,Asthma control questionnaire,gp_asthma
+15964901000119107,Atypical atrial flutter,gp_cvd
+194802003,True posterior myocardial infarction,gp_cvd
+194862000,Haemopericardium as current complication following acute myocardial infarction,gp_cvd
+194863005,Atrial septal defect as current complication following acute myocardial infarction,gp_cvd
+195212005,Brainstem stroke syndrome,gp_cvd
+300996004,Controlled atrial fibrillation,gp_cvd
+390799004,Coronary heart disease review,gp_cvd
+53741008,Arteriosclerotic heart disease,gp_cvd
+394701000,Asthma follow-up,gp_asthma
+1086661000000108,"[X]Depressive episode, unspecified",gp_cmd
+191610000,"Recurrent major depressive episodes, mild",gp_cmd
+192080009,Chronic depression,gp_cmd
+192611004,[x]phobic anxiet dis childhood | [x]phobic anxiety disorder of childhood,gp_cmd
+197480006,[x]generalized anxiety disord | [x]generalized anxiety disorder,gp_cmd
+225624000,panic disorder,gp_cmd
+713701000000108,Asthma monitoring admin.,gp_asthma
+185728001,Attends asthma monitoring,gp_asthma
+959441000000103,Asthma monitoring SMS (short message service) text message third invitation,gp_asthma
+185736005,Asthma monitor phone invite,gp_asthma
+219036002,AR - antiasthmatics,gp_asthma
+716901000000101,Chronic obstructive pulmonary disease monitor phone invite,gp_copd
+719218000,Bronchiolitis obliterans with usual interstitial pneumonitis,gp_copd
+373899003,Asthma daytime symptoms,gp_asthma
+1066281000000104,COPD monitring short message service text message invitation,gp_copd
+195953005,Mixed simple and mucopurulent chronic bronchitis,gp_copd
+266355005,Bullous emphysema with collapse,gp_copd
+266395007,Chronic: [bronchitis NOS] or [tracheobronchitis],gp_copd
+313299006,Severe chronic obstructive pulmonary disease,gp_copd
+375851000000108,Referred for COPD structured smoking assessment,gp_copd
+413845009,COPD accident and emergency attendance since last visit,gp_copd
+473202005,Chronic obstructiv pulmonary disease medication optimisation,gp_copd
+66987001,Congenital lobar emphysema,gp_copd
+340931000000101,Asthma trigger - warm air,gp_asthma
+161503005,H/O: myocardial infarct at greater than 60,gp_cvd
+194809007,Acute atrial infarction,gp_cvd
+195168007,"Intracerebral haemorrhage, intraventricular",gp_cvd
+195200006,Carotid artery syndrome hemispheric,gp_cvd
+195211003,Posterior cerebral artery syndrome,gp_cvd
+22298006,Myocardial infarction,gp_cvd
+230700009,Pure sensory lacunar infarction,gp_cvd
+233823002,Silent myocardial ischaemia,gp_cvd
+233836002,Acute Q wave infarction - widespread,gp_cvd
+275434003,Stroke in the puerperium,gp_cvd
+311793000,Postoperative transmural myocardial infarction of inferior wall,gp_cvd
+699245006,Admit ischaemic heart disease emergency,gp_cvd
+71444005,Cerebral thrombosis,gp_cvd
+401182001,Asthma monitoring by nurse,gp_asthma
+370205009,Asthma night symp 1-2 per mth,gp_asthma
+390877003,Step up chnge asthm managmt pl,gp_asthma
+1037451000000103,Referral for psychological management of anxiety,gp_cmd
+191708009,chronic anxiety,gp_cmd
+191740008,Neurotic depression reactive type,gp_cmd
+231521002,phobic disorder nos,gp_cmd
+34563004,Fear of getting cancer,gp_cmd
+371631005,[x]panic episodic paroxysm anx | [x]panic disorder [episodic paroxysmal anxiety],gp_cmd
+394924000,symptoms of depression,gp_cmd
+54587008,[x]specific (isolated) phobia | [x]specific (isolated) phobias,gp_cmd
+1086701000000102,Extrinsic asthma + status,gp_asthma
+73867007,"Recurrent depressive disorder, current episode severe with psychotic symptoms",gp_cmd
+74732009,[x]other specif anxiety disord | [x]other specified anxiety disorders,gp_cmd
+87512008,"[x]major depression, mild",gp_cmd
+218973009,"[X]Antiasthmatics adv eff,NEC",gp_asthma
+170642006,Asthma severity,gp_asthma
+370218001,Mild asthma,gp_asthma
+717521000000104,Chronic obstructive pulmonary disease monitoring 3rd letter,gp_copd
+7457009,Chronic tracheitis,gp_copd
+790301000000101,Referral to COPD community nursing team,gp_copd
+87433001,Emphysema,gp_copd
+198411000000102,Chronic obstructive pulmonary disease does not disturb sleep,gp_copd
+45145000,MacLeod's unilateral emphysema,gp_copd
+601581000000100,Other specified chronic obstructive pulmonary disease,gp_copd
+23315001,Sequoiosis (red-cedar asthma),gp_asthma
+401193004,Asthma confirmed,gp_asthma
+194858006,Subsequent myocardial infarction of inferior wall,gp_cvd
+307140009,Acute non-Q wave infarction,gp_cvd
+307766002,Left sided cerebral infarction,gp_cvd
+315026000,Transient myocardial ischaemia,gp_cvd
+414545008,Ischaemic heart disease,gp_cvd
+70422006,Acute subendocardial infarction,gp_cvd
+401183006,Asthma monitoring by doctor,gp_asthma
+182724005,Further asthma - drug prevent.,gp_asthma
+191676002,Severe depressive episode with psychotic symptoms,gp_cmd
+191725006,"social phobia-public speaking | social phobia, fear of public speaking",gp_cmd
+198288003,[x]generalized anxiety disord | [x]generalized anxiety disorder,gp_cmd
+425131000,[d]nervousness,gp_cmd
+46244001,"Recurrent major depressive episodes, in full remission",gp_cmd
+736056000,Asthma clin management plan,gp_asthma
+185940009,Patient in asthma study,gp_asthma
+233678006,Extrinsic (atopic) asthma,gp_asthma
+63088003,Extrinsic asthma - no status,gp_asthma
+760601000000107,Chronic obstructive pulmonary disease 3 monthly review,gp_copd
+857791000000103,Chronic obstructive pulmonary disease rescue pack declined,gp_copd
+170647000,Asthma prophylaxis used,gp_asthma
+170658009,Asthma never restrcts exercise,gp_asthma
+185086009,Emphysematous bronchitis,gp_copd
+195957006,Chronic bullous emphysema NOS,gp_copd
+233677001,Scar emphysema,gp_copd
+61937009,Simple chronic bronchitis,gp_copd
+233679003,Late-onset asthma,gp_asthma
+10692761000119107,Asthma-COPD overlap syndrome,gp_asthma
+443450003,Asthma control test,gp_asthma
+170633004,Asthma disturbs sleep weekly,gp_asthma
+57607007,Work aggravated asthma,gp_asthma
+195216008,Left sided cerebral hemisphere cerebrovascular accident,gp_cvd
+233911009,Non-rheumatic atrial fibrillation,gp_cvd
+307767006,Right sided cerebral infarction,gp_cvd
+771941000000102,Asthma cause sympt most nights,gp_asthma
+191733007,fear of pregnancy,gp_cmd
+191741007,(Neurasthenia - nervous debility) or (nervous exhaustion) or (tired all the time),gp_cmd
+89581000000109,Did not attend asthma clinic,gp_asthma
+715801000000103,Except report: asthma qual ind,gp_asthma
+1086711000000100,Intrinsic asthma + status,gp_asthma
+64165008,[x]social anx dis childhood | [x]social anxiety disorder of childhood,gp_cmd
+755331000000108,[X]Rec ma dep ep sev ps ps rem,gp_cmd
+790961000000101,[x]antenatal depression,gp_cmd
+292495000,"[X]Antiasthmatics adv eff,NEC",gp_asthma
+170636007,Asthma never disturbs sleep,gp_asthma
+771981000000105,Asthma limit act 1-2 time mth,gp_asthma
+772011000000107,Asth limit activ 1 - 2 time wk,gp_asthma
+77690003,Acute interstitial emphysema,gp_copd
+783631000000109,GP OOH service notified of COPD care plan,gp_copd
+827571000000106,Has chronic obstructive pulmonary disease care plan,gp_copd
+84409004,Fetid chronic bronchitis,gp_copd
+195985008,Post-infective bronchiectasis,gp_copd
+32398004,Bronchitis unspecified,gp_copd
+734904007,Status asthmaticus NOS,gp_asthma
+57607007,Occupational asthma,gp_asthma
+414883002,Number of consecutive days at less than 80% peak expiratory flow rate,gp_asthma
+527211000000100,Heal educ - struct asthma disc,gp_asthma
+194857001,Subsequent myocardial infarction of anterior wall,gp_cvd
+230711001,"Intracerebral haemorrhage, intraventricular",gp_cvd
+233834004,Acute non-Q wave infarction - lateral,gp_cvd
+233846000,Ventricular septal defect as current complication following acute myocardial infarction,gp_cvd
+233847009,Cardiac rupture after acute myocardial infarction,gp_cvd
+57054005,Acute myocardial infarction,gp_cvd
+370208006,Asthma never causes day symps,gp_asthma
+370207001,Asthm limits walk hills/stairs,gp_asthma
+191726007,"social phobia-public washing | social phobia, fear of public washing",gp_cmd
+192110004,child/adolesc.fearfulness dis. | childhood and adolescent fearfulness disturbance,gp_cmd
+19887002,claustrophobia,gp_cmd
+199101000000102,Referral for guided self-help for anxiety,gp_cmd
+247803002,[X]Recurrent depressive disorder,gp_cmd
+274948002,Recurrent major depressive episode,gp_cmd
+401269004,Fear of falling,gp_cmd
+424196004,nerves - nervousness,gp_cmd
+48694002,anxiousness,gp_cmd
+183099005,Asthma leaflet given,gp_asthma
+85232009,Left ventricular failure,gp_asthma
+61569007,agoraphobia - no panic attacks | agoraphobia without mention of panic attacks,gp_cmd
+170638008,Asthma not limiting activities,gp_asthma
+897311000000101,Shared care chronic obstructive pulmonary disease monitoring,gp_copd
+370226009,Asth treat compliance satisfac,gp_asthma
+198401000000104,Chronic obstructive pulmonary disease disturbs sleep,gp_copd
+201681000000102,Home oxygen supply - concentrator,gp_copd
+201691000000100,Home oxygen supply - liquid oxygen,gp_copd
+266356006,Atrophic (senile) emphysema,gp_copd
+275503004,(Bullous emphysema with collapse) or (tension pneumatocoele),gp_copd
+394703002,Chronic obstructive pulmonary disease annual review,gp_copd
+49691004,Occupational chronic bronchitis,gp_copd
+513961000000108,Oxygen therapy initial assessment,gp_copd
+716241000000106,Chronic obstructive pulmonary disease monitoring 1st letter,gp_copd
+716281000000103,Chronic obstructive pulmonary disease monitoring verb invite,gp_copd
+195967001,Asthma NOS,gp_asthma
+170627008,Airways obstruction reversible,gp_asthma
+266361008,Intrinsic asthma NOS,gp_asthma
+182728008,Asthma control step 2,gp_asthma
+161502000,H/O: myocardial infarct at less than 60,gp_cvd
+194856005,Subsequent myocardial infarction,gp_cvd
+194868001,"Thrombosis of atrium, auricular appendage, and ventricle as current complications following acute myocardial infarction",gp_cvd
+195080001,Atrial fibrillation and flutter,gp_cvd
+195186005,Cerebral infarction due to embolism of precerebral arteries,gp_cvd
+230691006,CVA - cerebrovascular accident due to cerebral artery occlusion,gp_cvd
+233843008,Silent myocardial infarction,gp_cvd
+233910005,Lone atrial fibrillation,gp_cvd
+311792005,Postoperative transmural myocardial infarction of anterior wall,gp_cvd
+314208002,Rapid atrial fibrillation,gp_cvd
+46109009,Subendocardial ischaemia,gp_cvd
+75543006,Cerebral embolism,gp_cvd
+395022009,Asthma night-time symptoms,gp_asthma
+390940007,Asthma monitoring due,gp_asthma
+966031000000101,NULL,gp_asthma
+207363009,[x]generalized anxiety disord | [x]generalized anxiety disorder,gp_cmd
+231501003,[x]needle phobia,gp_cmd
+268621008,"[X]Recurrent depressive disorder, current episode severe without psychotic  symptoms",gp_cmd
+300706003,"[X]Recurrent depressive disorder, current episode severe without psychotic  symptoms",gp_cmd
+310497006,[X]Severe depressive episode without psychotic symptoms,gp_cmd
+413169006,On depression register,gp_cmd
+413974004,Depression medication review,gp_cmd
+446175003,Acute post-traumatic stress disorder following military combat,gp_cmd
+182731009,Asthma control step 5,gp_asthma
+959421000000105,Asthma monitoring SMS (short message service) text message second invitation,gp_asthma
+233683003,Extrinsic (atopic) asthma,gp_asthma
+716491000000100,Excep asthma qual ind: Inf dis,gp_asthma
+755321000000106,[X]Sin ma dep ep sev ps ps rem,gp_cmd
+292540008,"[X]Antiasthmatics adv eff,NEC",gp_asthma
+7163005,"[X]Obstructive and reflux uropathy, unspecified",gp_copd
+736283006,Chronic obstructive pulmonary disease clini management plan,gp_copd
+89549007,Chronic catarrhal bronchitis,gp_copd
+370225008,Asth treat compliance unsatisf,gp_asthma
+170657004,Asthma severely restr exercise,gp_asthma
+312454005,Asthma - currently dormant,gp_asthma
+708373002,Asth A&E attend since last vis,gp_asthma
+1066821000000101,COPD monitoring SMS text message first invitation,gp_copd
+233674008,Pulmonary emphysema in alpha-1 PI deficiency,gp_copd
+31387002,Asthma NOS,gp_asthma
+31387002,Exercise induced asthma,gp_asthma
+201211000000107,Asthma trigger - emotion,gp_asthma
+527191000000104,Health educ - asthm self manag,gp_asthma
+182726007,Asthma control step 0,gp_asthma
+194821006,MI - myocardial infarction aborted,gp_cvd
+314207007,Non-Q wave myocardial infarction,gp_cvd
+394724007,Coronary heart disease medication review,gp_cvd
+183399002,antiphobic therapy,gp_cmd
+191720001,phobic disorders,gp_cmd
+21897009,generalised anxiety disorder,gp_cmd
+231500002,[X]Other depressive episodes,gp_cmd
+35489007,Depressive disorder NEC,gp_cmd
+185242005,Seen in asthma clinic,gp_asthma
+698509001,Under care asthma spclst nurse,gp_asthma
+715191006,Telehealth asthma monitoring,gp_asthma
+185735009,Asthma monitor verbal invite,gp_asthma
+708093000,Extrinsic asthma + status,gp_asthma
+67195008,acute stress reaction nos,gp_cmd
+698957003,"[X]Recurrent depressive disorder, currently in remission",gp_cmd
+75084000,"[x]maj dep, sev wthout psy sym | [x]major depression, severe without psychotic symptoms",gp_cmd
+772051000000106,Asthma limits activit most day,gp_asthma
+848431000000106,Chronic obstructive pulmonary disease care pathway,gp_copd
+941201000000103,Chronic obstructive pulmonary disease resolved,gp_copd
+170656008,Asthma sometime restr exercise,gp_asthma
+1066851000000106,COPD monitoring SMS text message third invitation,gp_copd
+10692761000119107,Asthma-chronic obstructive pulmonary disease overlap syndrom,gp_copd
+196001008,Chronic obstruct pulmonary dis with acute lower resp infectn,gp_copd
+313297008,Moderate chronic obstructive pulmonary disease,gp_copd
+401185004,Chronic obstructive pulmonary disease monitoring by doctor,gp_copd
+445312005,Clinical chronic obstructive pulmonary disease questionnaire,gp_copd
+195967001,Asthma unspecified,gp_asthma
+866881000000101,Chron asthm w fix airflw obstr,gp_asthma
+810901000000102,Asthma self-manage plan review,gp_asthma
+161527007,H/O: asthma,gp_asthma
+340921000000103,Asthma trigger - tobacco smoke,gp_asthma
+201031000000108,Asthma trigger respiratory inf,gp_asthma
+340901000000107,Asthma trigger - exercise,gp_asthma
+129574000,Postoperative myocardial infarction,gp_cvd
+230698000,Lacunar infarction,gp_cvd
+233837006,Acute non-Q wave infarction - widespread,gp_cvd
+266231003,Atherosclerotic heart disease,gp_cvd
+311796008,Postoperative subendocardial myocardial infarction,gp_cvd
+315614006,Coronary heart disease annual review,gp_cvd
+32574007,Old myocardial infarction,gp_cvd
+371041009,Cerebral infarction due to embolism of cerebral arteries,gp_cvd
+176711000000100,Does not have asthma man plan,gp_asthma
+191709001,recurrent anxiety,gp_cmd
+191738003,obsessional neurosis,gp_cmd
+247753000,loss of interest,gp_cmd
+247854002,acute stress reaction nos,gp_cmd
+272022009,depressed,gp_cmd
+182729000,Asthma control step 3,gp_asthma
+713711000000105,Asthma monitoring admin.,gp_asthma
+266361008,Intrinsic asthma,gp_asthma
+928511000000107,Asthma monitoring invitation email,gp_asthma
+233683003,Extrinsic asthma - no status,gp_asthma
+847091000000104,Acute non-infective exacerbation of COPD,gp_copd
+866901000000103,Eosinophilic bronchitis,gp_copd
+33325001,Compensatory emphysema,gp_copd
+589211000000100,Other emphysema,gp_copd
+704123000,Step down change in COPD management plan,gp_copd
+708090002,Status asthmaticus NOS,gp_asthma
+270442000,Asthma monitoring check done,gp_asthma
+1755008,Old myocardial infarction,gp_cvd
+195206000,Intermittent cerebral ischaemia,gp_cvd
+195210002,Anterior cerebral artery syndrome,gp_cvd
+230699008,Pure motor lacunar syndrome,gp_cvd
+182727003,Asthma control step 1,gp_asthma
+191613003,"Recurrent depressive disorder, current episode severe with psychotic symptoms",gp_cmd
+191736004,obsessive-compulsive disorders,gp_cmd
+191737008,compulsive neurosis,gp_cmd
+192049004,Prolonged depressive reaction,gp_cmd
+192108001,anxiety/fear child/adoles.dis. | disturbance of anxiety and fearfulness childhood/adolescent | disturbance of anxiety and fearfulness in childhood and adolescence,gp_cmd
+231508009,acute stress reaction nos,gp_cmd
+25501002,[x]social phobias,gp_cmd
+386808001,phobia unspecified,gp_cmd
+54307006,animal phobia,gp_cmd
+415265005,Referral to asthma clinic,gp_asthma
+182730005,Asthma control step 4,gp_asthma
+424643009,Extrinsic asthma NOS,gp_asthma
+70691001,[x]agoraphobia,gp_cmd
+79298009,"Single major depressive episode, mild",gp_cmd
+292617004,"[X]Antiasthmatics adv eff,NEC",gp_asthma
+292615007,"[X]Antiasthmatics adv eff,NEC",gp_asthma
+718241000000107,Issue of chronic obstructive pulmonary disease rescue pack,gp_copd
+13617004,Tracheobronchitis NOS,gp_copd
+195958001,Segmental bullous emphysema,gp_copd
+270473001,History of chronic obstructive pulmonary disease,gp_copd
+40100001,Obliterative bronchiolitis,gp_copd
+405720007,Asthma NOS,gp_asthma
+275914007,Respiratory disease monitoring,gp_asthma
+473391009,Asthma never caus night symptm,gp_asthma
+527231000000108,Heal educ - struc foc ast disc,gp_asthma
+195185009,Cerebral infarct due to thrombosis of precerebral arteries,gp_cvd
+195190007,Cerebral infarction due to embolism of cerebral arteries,gp_cvd
+195217004,Right sided CVA,gp_cvd
+230692004,Infarction - precerebral,gp_cvd
+230716006,Anterior circulation transient ischaemic attack,gp_cvd
+233825009,Acute Q wave infarction - anteroseptal,gp_cvd
+314116003,Post infarct angina,gp_cvd
+413844008,Chronic myocardial ischaemia,gp_cvd
+49436004,Atrial fibrillation,gp_cvd
+66189004,Postmyocardial infarction syndrome,gp_cvd
+370204008,Asthma daytime symps most days,gp_asthma
+191616006,[X]Recurrent depressive disorder,gp_cmd
+19527009,"Single major depressive episode, in full remission",gp_cmd
+247853008,fear of flying,gp_cmd
+272024005,depressed,gp_cmd
+527171000000103,Pat writt asthma pers act plan,gp_asthma
+928451000000107,Asthma monitoring invitation SMS (short message service) text message,gp_asthma
+959401000000101,Asthma monitoring SMS (short message service) text message first invitation,gp_asthma
+185731000,Asthma monitor 1st letter,gp_asthma
+195949008,Chronic asthmatic bronchitis,gp_asthma
+275514001,Left ventricular failure,gp_asthma
+764611000000100,"Recurrent major depressive episodes, severe, no psychosis",gp_cmd
+760621000000103,Chronic obstructive pulmonary disease 6 monthly review,gp_copd
+789661000000102,Preferred place of care for next exacerbation of COPD,gp_copd
+370221004,Severe asthma,gp_asthma
+135836000,End stage chronic obstructive airways disease,gp_copd
+195986009,Bronchiectasis,gp_copd
+275915008,Home oxygen supply started,gp_copd
+383611000000102,At risk of chronic obstructive pulmonary diseas exacerbation,gp_copd
+390891009,Chronic obstructive pulmonary disease monitoring,gp_copd
+401184000,Chronic obstructive pulmonary disease monitoring by nurse,gp_copd
+425748003,Acute exacerbation of chronic obstructive airways disease,gp_copd
+52571006,Chronic tracheobronchitis,gp_copd
+445074007,Mini asthma QOL questionnaire,gp_asthma
+170632009,Asthma causing night waking,gp_asthma
+340911000000109,Asthma trigger - pollen,gp_asthma
+401135008,Health education - asthma,gp_asthma
+195209007,Middle cerebral artery syndrome,gp_cvd
+230690007,CVA - Cerebrovascular accident,gp_cvd
+233885007,Post-infarction pericarditis,gp_cvd
+315348000,Asymptomatic coronary heart disease,gp_cvd
+394700004,Asthma annual review,gp_asthma
+15639000,"Single major depressive episode, moderate",gp_cmd
+191611001,"Recurrent major depressive episodes, moderate",gp_cmd
+192079006,Postviral depression,gp_cmd
+268754004,(Nervous debility - neurasthenia) or (nervous exhaustion) or (TATT - tired all the time),gp_cmd
+288751000119101,Severe depressive episode with psychotic symptoms,gp_cmd
+38617005,dental phobia,gp_cmd
+446180007,Delayed post-traumatic stress disorder following military combat,gp_cmd
+966011000000109,At risk severe asthma exacerbation,gp_asthma
+892301000000100,Asthma management plan declined,gp_asthma
+389145006,Extrinsic (atopic) asthma,gp_asthma
+233679003,Intrinsic asthma,gp_asthma
+83458005,Single major depressive episode,gp_cmd
+87414006,"[X]Depressive episode, unspecified",gp_cmd
+219036002,AR - antiasthmatic NOS,gp_asthma
+370220003,Occasional asthma,gp_asthma
+196026004,Chronic emphysema due to chemical fumes,gp_copd
+233673002,Drug-induced bronchiolitis obliterans,gp_copd
+408501008,Admit COPD emergency,gp_copd
+414087000,Emergency COPD admission since last appointment,gp_copd
+46802002,Smokers' cough,gp_copd
+63480004,Chronic bronchitis,gp_copd
+649131000000101,Simple chronic bronchitis,gp_copd
+68328006,Centrilobular emphysema,gp_copd
+302331000000106,RCP asthma assessment,gp_asthma
+170612008,Increasing exercise wheeze,gp_asthma
+400987003,Asthma trigger,gp_asthma
+195977004,Mixed asthma,gp_asthma
+56968009,Wood asthma,gp_asthma
+394967008,Suspected asthma,gp_asthma
