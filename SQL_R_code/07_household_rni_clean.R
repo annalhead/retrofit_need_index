@@ -406,4 +406,36 @@ p
 
 
 
+## Creating neat, 2025, version for output ----
+lsoa_cm_2025 <- lsoa_cm[year == 2025, ]
+
+# Sensitivity analyses not demeaned
+lsoa_cm_2025[, rni_sa1_demean := lsoa_demean(rni_sa1, rni_sa1_N)]
+lsoa_cm_2025[, rni_sa2_demean := lsoa_demean(rni_sa2, rni_sa2_N)]
+
+#Order the variables more logically 
+lsoa_cm_2025<- lsoa_cm_2025[, .(year, 
+                                acorn_LSOA2011, 
+                 rni = rni_demean, 
+                 rni_N, 
+                 rni_sa1 = rni_sa1_demean, 
+                 rni_sa1_N,
+                 rni_sa2 = rni_sa2_demean, 
+                 rni_sa2_N,
+                 rni_health_vuln = rni_hv_demean, 
+                 rni_health = rni_h_demean,
+                 rni_big_pc, 
+                 rni_big_sa1_pc,
+                 rni_big_sa2_pc,
+                 lowEPC_pc, 
+                 poverty_pc, 
+                 eligibility_pc,
+                 eligibility_sa1_pc,
+                 eligibility_sa2_pc, 
+                 imd_dec, 
+                 imd_inc_score
+                 )]
+
+fwrite(lsoa_cm_2025, paste0(secure_outputs_dir, "LSOA_rni_2025.csv"))
+
 
