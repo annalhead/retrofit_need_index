@@ -7,3 +7,5 @@ When run sequentially, these files prepare the raw data for compilation into a i
 5. 05_phirst-workflow-apce.sql: cleans the admitted patient care data (secondary care data)
 6. 06_health_needs_index_procedure.sql: creates annual summaries at household level
 7. 07_household_rni_clean.R: creates the index at household-level and then aggregates at LSOA level for export 
+
+The regional_national_comparison.R script compares the LSOA aggregated version of this household-level retrofit needs index for Cheshire and Merseyside to the national-level index created at LSOA level using openly available data. 
