@@ -1,6 +1,6 @@
 # Household_retrofit_need_index
 
-This repository contains the code lists and analysis code for a household-level index of health-sensitive retrofit need for Cheshire & Merseyside. 
+This repository contains the code lists and analysis code for a household-level index of health-sensitive retrofit need for Cheshire & Merseyside in 2025. 
 
 In brief, the regional household-level index was constructed for Cheshire and Merseyside ICB using pseudonymised primary and secondary health care data within a secure data environment. Individuals registered with participating general practices in 2025 and not opted out of data sharing were grouped into households using pseudonymised UPRNs. The latest recorded residential address was used for linkage to EPC and area deprivation data. 
 
