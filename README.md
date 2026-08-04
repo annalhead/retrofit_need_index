@@ -29,9 +29,6 @@ sensitivity analyses, and publication figures.
 | [`outputs/`](outputs/) | Derived tables, maps, sensitivity plots, heat maps, and Sankey diagrams used in or supporting the manuscript and supplement. See the [output guide](outputs/README.md). |
 | `.gitignore` | Excludes R/RStudio session files and large public source files that the analysis downloads when required. |
 
-The spelling of `housing_retofit_needs_index_v4.Rmd` is retained because it is
-the existing executable filename and is referenced by the project workflow.
-
 ## Public reproduction workflow
 
 1. Clone or download the repository and open
