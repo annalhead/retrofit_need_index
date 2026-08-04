@@ -29,7 +29,6 @@ sensitivity analyses, and publication figures.
 | [`outputs/`](outputs/) | Derived tables, maps, sensitivity plots, heat maps, and Sankey diagrams used in or supporting the manuscript and supplement. See the [output guide](outputs/README.md). |
 | `housing_retrofits_final.Rproj` | RStudio project file; opening it sets the repository root as the working project. |
 | `.gitignore` | Excludes R/RStudio session files and large public source files that the analysis downloads when required. |
-| `.Rhistory` and `.Rproj.user/` | Local R/RStudio session metadata. These are ignored by Git and are not part of the publication repository. |
 
 ## Public reproduction workflow
 
