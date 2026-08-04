@@ -85,6 +85,4 @@ The submitted documents:
   extended methods, data-source and weighting tables, additional figures, and
   supplementary results.
 
-When citing the data or code, cite the associated manuscript and the final
-archived repository release/DOI once available. Source datasets remain subject
-to the terms of their original publishers.
+Source datasets remain subject to the terms of their original publishers.
