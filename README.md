@@ -3,7 +3,7 @@
 This repository accompanies the manuscript **“A health-sensitive housing
 retrofit need index for English neighbourhoods”** and its supplementary
 material. It contains the public data, R code, and derived outputs used to
-describe housing retrofit need across English Lower-layer Super Output Areas
+investigate housing retrofit need across English Lower-layer Super Output Areas
 (LSOAs).
 
 The analysis compares:
@@ -12,7 +12,7 @@ The analysis compares:
   deprivation; and
 - an **enhanced (health-sensitive) index**, which additionally incorporates
   population health vulnerability.
-
+![Alt Conventional vs enhanced HRNI](https://github.com/Dr-Ele-A/Neighbourhood-HRNI-Project/blob/master/outputs/lsoa_need_relv_indx1_maps_v4_fshr.png)
 The enhanced index was originally constructed in an approved secure
 environment because condition-specific emergency-admission data are
 safeguarded. Those confidential inputs are not included here. Instead, the
