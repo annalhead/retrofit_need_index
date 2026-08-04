@@ -75,7 +75,7 @@ admissions, modelled population files, secure paths, and any outputs retaining
 confidential columns must never be committed to this repository.
 
 ## Manuscript and supplementary material
-The submitted documents:
+The associated documents:
 - `JECH_revised_manuscript_health_sensitive_retrofit_index.docx` contains
   the main article, including the national index methods, geographic results,
   local-authority variation, sensitivity analyses, and policy implications.
