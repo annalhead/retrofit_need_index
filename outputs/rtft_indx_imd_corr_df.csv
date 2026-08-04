@@ -1,0 +1,15 @@
+variables,corr,pvalue
+index_of_multiple_deprivation_imd_score,0.825,0
+income_score_rate,0.825,0
+employment_score_rate,0.823,0
+health_deprivation_and_disability_score,0.753,0
+adult_skills_sub_domain_score,0.737,0
+education_skills_and_training_score,0.729,0
+crime_score,0.551,0
+geographical_barriers_sub_domain_score,-0.368,0
+wider_barriers_sub_domain_score,0.291,0
+living_environment_score,0.264,0
+indoors_sub_domain_score,0.25,0
+epc_lss_eql_d_prcnt,0.15,0
+outdoors_sub_domain_score,0.137,0
+barriers_to_housing_and_services_score,-0.11,0

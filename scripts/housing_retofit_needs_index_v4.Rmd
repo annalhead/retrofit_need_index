@@ -1,0 +1,1508 @@
+---
+title: "Index of housing retrofit need"
+author: "Prof Ben Barr, Dr Eleojo Abubakar et al."
+date: "2025-10-03"
+output: html_document
+---
+# Introduction
+
+Aim: Create an index at the national level that captures how neighbourhood-level needs for housing retrofit vary in a way that is sensitive to differences in population health status. 
+
+Question: To what extent do neighbourhood-level needs for housing retrofits differ according to housing energy efficiency, levels of income deprivation, and the vulnerability of residents to poor housing conditions due to their health status? And how does this vary across regions of England? 
+
+# Methods summary
+Neighbourhood retrofit need was operationalised at the Lower-layer Super Output Area (LSOA) level for England by combining three domains: housing energy inefficiency, income deprivation, and population health vulnerability. Housing energy inefficiency was measured as the percentage of dwellings with an Energy Performance Certificate (EPC) rating of band D or worse, derived from NOMIS small-area housing energy efficiency statistics. Income deprivation was captured using the Income domain score/rate from the 2019 Index of Multiple Deprivation (IMD). Health vulnerability indicators were assembled from two sources: (i) Quality and Outcomes Framework (QOF) prevalence estimates for selected long-term conditions (including asthma, chronic obstructive pulmonary disease (COPD) and mental health) and (ii) LSOA-level emergency admission rate indicators for condition groups plausibly sensitive to poor housing (including respiratory conditions, cardiovascular disease, and injuries/burns/falls among adults aged ≥65 years). Datasets were harmonised to a common LSOA geography using best-fit lookup tables (including LSOA 2011–2021 correspondences where required), and analyses were restricted to English LSOAs.
+
+A composite retrofit needs index was generated using a multi-criteria decision analysis approach. Missing values in numeric indicators were imputed using the corresponding local-authority (district) mean to preserve small-area coverage, and extreme values were reduced using percentile-based winsorisation. COPD and asthma prevalence were additionally combined using a lightly trimmed mean to stabilise estimates while retaining the original percentage scale. Health vulnerability indicators (all expressed as percentages/rates on a comparable scale) were aggregated into a single health-vulnerability domain using a weighted mean, with condition weights informed by published estimates of health impacts associated with meeting housing quality standards (Rodgers et al., 2018) and normalised to sum to one before application. The final retrofit needs index combined the three domains (energy inefficiency, income deprivation, and health vulnerability) using a weighted-product formulation to reflect compounding need when multiple domains are jointly high. Index values were then standardised (z-scores), expressed as a relative index (x/mean(x)), ranked, and mapped using LSOA boundary shapefiles in R, with local authority boundaries overlaid for geographic interpretation.
+
+# Environment setup and data import
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+options(max.print = 10000, timeout = max(600, getOption("timeout")))
+
+library(readxl, quietly = T)
+library(SmartEDA, quietly = T)
+library(tidyverse, verbose = F)
+library(magrittr)
+
+# plots
+library(scales)
+library(patchwork)
+library(plotly)
+library(ggrepel)
+library(ggsankeyfier)
+library(paletteer)
+library(ragg)
+
+#for data preprocessing
+library(sjmisc)
+library(janitor)
+
+library(statsExpressions)
+library(lares) #compute correlations
+
+# for mapping
+library(sf)
+library(tmap)
+tmap_options(
+  output.dpi = 600,
+  unit = "cm"
+)
+
+#make 'outputs' directory (if it doesn't already exist)
+outputs_dir <- "outputs"
+if(!dir.exists(outputs_dir)){
+  dir.create(outputs_dir)
+}
+
+# The GitHub-facing workflow is the default. Set
+# HOUSING_RETROFIT_DATA_MODE=safeguarded only in the approved secure environment
+# to rebuild the index from the restricted emergency-admissions inputs.
+run_safeguarded <- identical(
+  tolower(Sys.getenv("HOUSING_RETROFIT_DATA_MODE", unset = "public")),
+  "safeguarded"
+)
+
+public_index_path <- file.path(
+  "open_data",
+  "housing_retrofit_need_index_lsoa_v3.csv"
+)
+
+# Stable publisher endpoints. Large public files are downloaded to the R
+# session's temporary directory rather than committed to this repository.
+source_urls <- list(
+  nomis_energy = paste0(
+    "https://www.nomisweb.co.uk/api/v01/dataset/NM_2401_1.data.csv?",
+    "date=2024&geography=TYPE151&energy_efficiency_8=4...7&",
+    "measures=20100,20301"
+  ),
+  imd2019 = paste0(
+    "https://assets.publishing.service.gov.uk/media/",
+    "5d8b3b51ed915d036a455aa6/File_5_-_IoD2019_Scores.xlsx"
+  ),
+  qof_asthma = "https://pldr.org/download/e6nzv/ng1/QOF_4_03_Asthma_LSOA.csv",
+  qof_copd = "https://pldr.org/download/23q1e/2tm/QOF_4_04_COPD_LSOA.csv",
+  qof_mental_health = "https://pldr.org/download/ex3od/j5c/QOF_4_15_MentalHealth_LSOA.csv",
+  lsoa_2011_to_2021 = paste0(
+    "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+    "b684a0dbf786473f9563ec0616da2f8b/csv?layers=0"
+  ),
+  lsoa_2011_to_lad_2020 = paste0(
+    "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+    "31dfd51115194a6bbe0bf4a26019f884/csv?layers=0"
+  ),
+  lsoa_2011_boundaries = paste0(
+    "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+    "f23b8af6504640558a5100dfcd19a7ee/geojson?layers=0"
+  ),
+  lad_2011_boundaries = paste0(
+    "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+    "ad7f01a8ae73441b95444080c78caa17/geojson?layers=0"
+  ),
+  lsoa_2011_to_region = paste0(
+    "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+    "c1e13af610c84ec59f086502e8ebe4f7/csv?layers=0"
+  )
+)
+
+download_to_temp <- function(url, fileext) {
+  destination <- tempfile(fileext = fileext)
+  download.file(url, destination, mode = "wb", quiet = TRUE)
+  destination
+}
+
+# data prep for shiny app
+# tmp_fld <- "E:/UniLiverpool/data_analysis/phirst_housing_retrofit/retrofit_shiny_app/retrofit_shiny_app/data/default"
+# if(!dir.exists(tmp_fld)){
+#   dir.create(tmp_fld)
+# }
+```
+
+
+```{r data-mode}
+# Secure paths are supplied through environment variables and are never stored
+# in the public repository.
+if (run_safeguarded) {
+  emgcy_adm_root_v2 <- Sys.getenv("EMERGENCY_ADMISSIONS_ROOT")
+  lsoa_pop_str_root <- Sys.getenv("LSOA_POPULATION_ROOT")
+
+  missing_secure_paths <- c(
+    EMERGENCY_ADMISSIONS_ROOT = emgcy_adm_root_v2,
+    LSOA_POPULATION_ROOT = lsoa_pop_str_root
+  )
+  missing_secure_paths <- names(missing_secure_paths)[
+    !dir.exists(unname(missing_secure_paths))
+  ]
+
+  if (length(missing_secure_paths) > 0) {
+    stop(
+      "Safeguarded mode requires valid directories in: ",
+      paste(missing_secure_paths, collapse = ", ")
+    )
+  }
+}
+
+```
+
+# House energy Conditions
+Download data from <https://www.nomisweb.co.uk/query/construct/submit.asp?menuopt=201&subcomp=>
+
+1. House conditions: % of households with EPC <= d
+see the column "epc_lss_eql_d_prcnt"
+```{r}
+# import energy efficiency data
+engy_eff <- read_csv("./open_data/housing_energy_efficiency_nomis.csv", skip = 5) %>% 
+  clean_names() %>% 
+  glimpse
+
+# rename columns
+# compute % less than or equal to EPC band D
+engy_eff <- 
+engy_eff %>% 
+  rename(., any_of(setNames(c("percent_4", "percent_6", "percent_8", "percent_10", "percent_12", "percent_14", "percent_16", "percent_18"), c("total_prcnt", "band_a_prcnt", "band_b_prcnt", "band_c_prcnt", "band_d_prcnt", "band_e_prcnt", "band_f_prcnt", "band_g_prcnt")))
+  ) %>% 
+  rowwise() %>% 
+  mutate(
+    # compute % of households with EPC <= d
+    epc_lss_eql_d_prcnt = sum(band_d_prcnt, band_e_prcnt, band_f_prcnt, band_g_prcnt),
+    epc_lss_eql_d_no = sum(band_d, band_e, band_f, band_g)
+  ) %>% 
+  ungroup() %>% 
+  glimpse
+
+```
+
+# Low income
+Income score of IMD 2019 or income deprivation affecting older people / income deprivation affecting children.
+
+see the column named "income_score_rate" or "income_deprivation_affecting_children_index_idaci_score_rate" or "income_deprivation_affecting_older_people_idaopi_score_rate"
+```{r imd2019}
+# import IMD2019 score
+imd2019 <- read_excel(
+  download_to_temp(source_urls$imd2019, ".xlsx"),
+  sheet = 2
+  ) %>% 
+  clean_names() %>% 
+  glimpse
+
+imd2019 %>% glimpse
+
+```
+
+# Population structure
+% over 65
+
+Can download open LSOA data of 2011 - 2022 from <https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/lowersuperoutputareamidyearpopulationestimates>
+see associated documentation at <https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/methodologies/smallareapopulationestimatesqmi>
+
+but use alternative safeguarded data available at ILRR_Store/Safeguarded_Data/ELF_LSOA_data, for 2014 - 2022
+```{r population-structure, eval=run_safeguarded}
+## Get full file paths of all CSVs (matching the specified regex pattern)
+lsoa_pop_65plus <- list.files(path = lsoa_pop_str_root, pattern = "^LSOA_65plus_mod_.+\\.csv$", full.names = TRUE)
+lsoa_pop_65plus
+
+# if prefer data not modelled, use the following regex instead
+# lsoa_pop_65plus <- list.files(path = lsoa_pop_str_root, pattern = "^LSOA_65plus_sev_.+\\.csv$", full.names = TRUE)
+
+## Create clean names (without prefix and extension)
+df_names2 <- str_remove_all(basename(lsoa_pop_65plus), "^LSOA_65plus_|\\.csv$")
+df_names2
+
+## Ingest all CSV files in folder into a list of named dfs
+pop65plus_lsoa_mod <- lsoa_pop_65plus %>%
+  set_names(df_names2) %>%
+  map(read_csv)
+
+# explore data
+names(pop65plus_lsoa_mod)
+pop65plus_lsoa_mod[["mod_sev_2022"]] %>% glimpse
+
+```
+
+# Prevalence of health condition in LSOA
+
+Update: 03/08/2026
+Use PLDR published LSOA prevalence data
+
+The R Markdown file reads `QOF_4_04_COPD`, `QOF_4_03_Asthma`, and `QOF_4_15_MentalHealth` directly from PLDR, replacing the original bespoke script for creating the QOF prevalence indicators.
+QOF_4_04: <https://pldr.org/dataset/quality-and-outcomes-framework-indicators-chronic-obstructive-pu-23q1e>
+QOF_4_03: <https://pldr.org/dataset/quality-and-outcomes-framework-indicators-asthma-prevalence-qof4-e6nzv>
+QOF_4_15 (Mental health): <https://pldr.org/dataset/quality-and-outcomes-framework-mental-health-prevalence-qof415-ex3od>
+
+```{r qof-prevalence, eval=run_safeguarded}
+# Read the three published PLDR CSVs directly. They are deliberately not
+# duplicated in open_data because each source file is approximately 40 MB.
+qof_prev_urls <- c(
+  QOF_4_03_Asthma = source_urls$qof_asthma,
+  QOF_4_04_COPD = source_urls$qof_copd,
+  QOF_4_15_MentalHealth = source_urls$qof_mental_health
+)
+
+prev_lsoa_lst <- map(
+  qof_prev_urls,
+  ~ read_csv(.x, show_col_types = FALSE)
+)
+
+# prev_lsoa_lst[[1]] %>% 
+#   # frq(year)
+#   glimpse
+
+# slice and cast pertinent LSOA prevalence data
+hlth_cndns_prev_lsoa <-
+  prev_lsoa_lst %>%
+  bind_rows(.id = "health_condition") %>% 
+  filter(year == 2022) %>%
+  # select(-c(den, num)) %>% 
+  pivot_wider(
+    id_cols = c(lsoa11, year),
+    names_from = health_condition,
+    names_glue = "{health_condition}.{.value}",
+    values_from = c(p_rate, den, num),
+    # names_sep = "."
+  ) %>% 
+  rename_with(~str_split_i(.x, regex("\\d{2}_"), -1), .cols = starts_with("QOF_")) %>% 
+    rowwise() %>% 
+  mutate(
+    # mean prev of asthma and copd rates
+    copd_asthma.p_rate = mean(c(COPD.p_rate, Asthma.p_rate), trim = 0.025, na.rm = T)
+  ) %>% 
+    ungroup() %>% 
+  glimpse
+
+# hlth_cndns_prev_lsoa %>% 
+#   glimpse
+
+```
+
+# Disease severity Data
+This is data on emergency hospital admission at the LSOA level for 2007 to 2019, safeguarded in the university
+
+Update: Rate computed here for emergency hospitalisation is now multiplied by 100, like other QoF prevalence rates.
+```{r disease-severity, eval=run_safeguarded}
+#-------------------------------------
+# DISEASE SEVERITY DATA (VERSION 2)
+#-----------------------------------
+# APC_2_03: All emergency admissions
+# APC_2_05: Asthma
+# APC_2_07: Respiratory conditions
+# APC_2_24: CVD
+# APC_2_49: Burns/Falls related hospital admissions
+# -----------------------------
+
+## Get full file paths of all CSVs (matching the specified regex pattern)
+## for burns/falls, get file disaggregated by age
+emgcy_adm_files <- list.files(path = emgcy_adm_root_v2,
+                              pattern = "^PLDR_v5_2_.+_APC_all_byLSOA\\.csv$|.+v5_2_49_APC_age5_byLSOA+.",
+                              full.names = TRUE,
+                              recursive = T
+                              )
+emgcy_adm_files
+
+# exclude file representing all conditions from list and
+# exclude file representing injuries and falls, not disaggregated by age
+emgcy_adm_cnd_files <- emgcy_adm_files[2:(length(emgcy_adm_files)-1)]
+emgcy_adm_cnd_files
+
+# read all files, process and stack them
+for(x in seq_along(emgcy_adm_cnd_files)){
+  if(x == 1){
+    emgcy_adm_df_lst = list()
+    cndns = c("asthma", "respiratory", "cvd", "burns_falls_65_ova")
+  }
+  
+  # read files to named list of dataframes
+  emgcy_adm_df_lst[[cndns[x]]] <- read_csv(emgcy_adm_cnd_files[x],
+                                           show_col_types = FALSE)
+  
+  # if agegroup in column names,
+  # recompute prevalence rate (p_rate) for aggreg age 65+ as p_num/mid_pop
+  if("agegroup" %in% colnames(emgcy_adm_df_lst[[cndns[x]]])){
+    print("processing falls/injuries for age 65+ ...")
+    emgcy_adm_df_lst[[cndns[x]]] <- emgcy_adm_df_lst[[cndns[x]]] %>% 
+      filter(agegroup >= 65) %>% 
+      group_by(lsoa11, year) %>% 
+      summarise(
+        p_num = sum(p_num),
+        admi_days = sum(admi_days),
+        non_na = sum(non_na),
+        mid_pop = sum(mid_pop)
+      ) %>% 
+      ungroup() %>% 
+      mutate(
+        mid_pop = case_when(
+          mid_pop <= 0 ~ NA,
+          p_num/mid_pop > 0.3 ~ NA,
+          .default = mid_pop
+        ),
+        p_rate=(p_num/mid_pop)*100
+      )
+  }
+  
+  # after ingesting all files, stack!
+  if(x == length(emgcy_adm_cnd_files)){
+    emgcy_adm_df_v2 <- bind_rows(emgcy_adm_df_lst, .id = "hlth_cndn")
+    emgcy_adm_df_v2 %>% glimpse
+  }
+}
+
+# explore dataframe v2
+emgcy_adm_df_v2 %>% glimpse
+  frq("hlth_cndn", "year")
+
+# cast data (i.e. long to wide format) for onward processing
+emgcy_adm_df_v2_cst <- 
+emgcy_adm_df_v2 %>% 
+  mutate(
+    name = hlth_cndn
+         ) %>% 
+  pivot_wider(
+    id_cols = c(lsoa11, year),
+    names_from = name,
+    names_glue = "{name}.{.value}",
+    values_from = p_rate, #p_num and/or mid_pop can be added here if needed
+  ) %>% 
+  filter(year == 2022) %>% 
+  glimpse
+
+# save project data
+gc()
+save.image()
+
+```
+
+# Compute Index of Need for housing retrofit
+
+We might have an issue of temporal mis-match since not all data sources have records upto 2024 to match EPC, LSOA prevalence etc data. Eg, latest age structure data is for 2022
+
+## Load & normalise weights
+
+These weights were derived from Rodgers et al (2018) and normalized to that all weights add up to one.
+
+Rodgers SE, Bailey R, Johnson R, et al. Health impact, and economic value, of meeting housing quality standards: a retrospective longitudinal data linkage study. Public Health Research 2018;6(8):134.
+```{r health-weights, eval=run_safeguarded}
+# read table of weights
+hlth_cnds_wts <- 
+  read_xlsx("open_data/disease_wts_use.xlsx") %>% 
+  filter(!is.na(label)) %>% 
+  glimpse
+
+# replace weight with average
+hlth_cnds_wts[5,2] <- hlth_cnds_wts[5,3] #%>% 
+hlth_cnds_wts #%>% glimpse
+
+# confirm replacement
+hlth_cnds_wts$wt
+hlth_cnds_wts$...3
+
+# save weights in a list with named values
+for(i in seq_along(hlth_cnds_wts$label)){
+  if(i == 1){
+    wts = list()
+  }
+  
+  wts[[hlth_cnds_wts$label[i]]] <- 
+hlth_cnds_wts %>% 
+  filter(label == hlth_cnds_wts$label[i]) %>% 
+  pull(wt)
+  
+  # print(wts[i])
+  
+}
+
+# flatten weights
+wts_flt <- wts %>% unlist
+wts_flt
+
+# normalise weights so they all sum to one
+wts_norm <- wts_flt/sum(wts_flt)
+wts_norm
+
+```
+
+## Join pertinent LSOA data
+
+Need to load data for weighting the LSOA measures
+
+NB:
+* Update to combination of copd + asthma rates. Now trimmed mean to maintain thesame scale as other rates (instead of weighted product).
+* Year of QoF prevalence data now downgraded from 2024 to 2022, for better alignment with the latest data on emergency admissions.
+* We have data for emergency admission due to asthma, and prevalence of asthma. We drop emergency admission due to asthma, and use only asthma prevalence rate (because we have weighting for it from Rodgers et al's 2018 paper)
+
+```{r join-index-inputs, eval=run_safeguarded}
+engy_eff %>% glimpse #based on LSOA 2021
+imd2019 %>% glimpse #based on LSOA 2011
+emgcy_adm_df_v2_cst %>% glimpse #2022 data based on LSOA 2011 (safeguarded)
+pop65plus_lsoa_mod[["mod_sev_2022"]] %>% glimpse ##based on LSOA 2011
+hlth_cnds_wts %>% glimpse
+hlth_cndns_prev_lsoa %>% glimpse 
+
+# LSOA 2011 to 2021 mapping
+lsoa_11_to_21 <- 
+  read_csv(source_urls$lsoa_2011_to_2021, show_col_types = FALSE) %>%
+  select(
+    -starts_with("LAD22"),
+    -any_of(c("ObjectId", "ObjectID", "OBJECTID", "LSOA11NM"))
+  ) %>% 
+  glimpse
+
+# lsoa_11_to_21 %>% glimpse
+
+# data joins
+## IMD inc + cond_prevelence + emergency admission + energy eff
+retrofit_need_indx_lsoa <-
+  imd2019 %>% select(LSOA11CD =lsoa_code_2011, income_score_rate) %>%
+  left_join(hlth_cndns_prev_lsoa %>% select(lsoa11, MentalHealth.p_rate, copd_asthma.p_rate), by = c("LSOA11CD" = "lsoa11")) %>% 
+  left_join(emgcy_adm_df_v2_cst %>% select(-c(year, asthma.p_rate)), by = c("LSOA11CD" = "lsoa11")) %>% 
+  left_join(pop65plus_lsoa_mod[["mod_sev_2022"]] %>% select(lsoa11, prop_65_plus = r_mod_sev), by = c("LSOA11CD" = "lsoa11")) %>%
+  left_join(lsoa_11_to_21, by = "LSOA11CD") %>% 
+  left_join(engy_eff %>% select(LSOA21CD = mnemonic, epc_lss_eql_d_prcnt, epc_lss_eql_d_no)) %>%
+  glimpse
+
+retrofit_need_indx_lsoa %>% 
+  glimpse
+
+```
+
+## Compute and export the index v3
+
+A new workflow is proposed.
+
+1. Fill missing values (in asthma.p_rate, 14 & prop_65_plus, 29) with their LA averages.
+
+2. Apply 95% winsorization, all data below the 2.5th percentile set to the 2.5th percentile, and data above the 97.5th percentile set to the 97.5th percentile.
+
+3. All indicators under the health domain are combined into a health vulnerability index, using weighted trimmed mean. All of these indicators are on thesame scale (%) and so do not need standardisation. Weighting was based on Rodgers et al, but all weights were normalised so they add up to one prior to application.
+
+4. Both income and health vulnerability domains are on thesame scale (% individuals), but the EPC domain is on a different scale (% houses). So all three domains are combined using the weighted product method. 
+
+5. Perform the weighted product method of all three domain
+
+6. Standardise the resulting scores (by z_score & as a ratio of the grand mean).
+
+The creation of a composite indicator in this study is a multicriteria decision analysis problem, we used both weighted sum and weighted product in this study.
+See:
+Mateo, J.R.S.C. (2012). Weighted Sum Method and Weighted Product Method. In: Multi Criteria Analysis in the Renewable Energy Industry. Green Energy and Technology. Springer, London. https://doi.org/10.1007/978-1-4471-2346-0_4
+
+see also <https://www.oecd.org/content/dam/oecd/en/publications/reports/2008/08/handbook-on-constructing-composite-indicators-methodology-and-user-guide_g1gh9301/9789264043466-en.pdf>
+
+```{r prepare-index-inputs, eval=run_safeguarded}
+
+# 1. Fill missing values (in asthma.p_rate, 14 & prop_65_plus, 29) with their LA averages.
+
+# LSOA to LAD mapping
+LSOA11toLAD20 <- read_csv(
+  source_urls$lsoa_2011_to_lad_2020,
+  show_col_types = FALSE
+  ) %>% 
+  select(-any_of(c("FID", "ObjectId", "ObjectID", "OBJECTID"))) %>% 
+  glimpse
+
+# LSOA11toLAD20 contains 34,753 lsoas, while the lsoa21 contains 35,797 zones
+
+rtrft_need_indtrs_fll <-
+  retrofit_need_indx_lsoa %>% 
+  left_join(LSOA11toLAD20, by = "LSOA11CD") %>% 
+  select(-c(WD20CD, WD20NM)) %>%
+  relocate(ends_with(c("NM", "CD"), ignore.case = F)) %>% 
+    # get only LSOAs in England
+  filter(str_starts(LSOA21CD, "E")) %>%
+    relocate(LSOA21CD, LSOA21NM, .after = LSOA11NM) %>%
+    # fill NAs with LAD means
+    group_by(LAD20CD) %>% 
+    mutate(
+      across(
+        where(is.numeric),
+        ~ if_else(is.na(.x),
+                if_else(all(is.na(.x)), NA_real_, mean(.x, na.rm = TRUE)),
+                .x)
+      )
+    ) %>%
+  ungroup() %>%
+    glimpse
+
+```
+
+Two version of the raw composite index are created, (1) considers all 3 domains, the second considers only the energy inefficiency and income deprivation domains which is the popular approach in policy cycles. The essence is to uncover the sensitivity of the health-aware approach hereby developed.
+```{r build-index, eval=run_safeguarded}
+# check for missingness in data
+rtrft_need_indtrs_fll %>% glimpse
+  View()
+
+# function for computing the relative index
+rltv_indx<-function(x){
+  x_mean <- mean(x, na.rm=T)
+  rtio_mean <- x/x_mean
+  return(rtio_mean)
+}
+  
+rtrft_need_indx_v3_fll <-
+rtrft_need_indtrs_fll %>%
+  #98% winsorization
+  datawizard::winsorize(
+    threshold = 0.1, #or 0.5, for 95% winsorization
+    method = "percentile",
+    verbose = T
+  ) %>%
+  # weighting and weighted summation
+  mutate(
+    MentalHealth.p_rate.wt = MentalHealth.p_rate*wts_norm['wt5'],
+    copd_asthma.p_rate.wt = copd_asthma.p_rate*wts_norm['wt1'],
+    respiratory.p_rate.wt = respiratory.p_rate*wts_norm['wt2'],
+    cvd.p_rate.wt = cvd.p_rate*wts_norm['wt3'],
+    burns_falls_65_ova.p_rate.wt = burns_falls_65_ova.p_rate*wts_norm['wt4']
+  ) %>% 
+  rowwise() %>% 
+  mutate(
+    hlth_vlnblty_dmain = mean(c(MentalHealth.p_rate.wt, copd_asthma.p_rate.wt, respiratory.p_rate.wt, cvd.p_rate.wt, burns_falls_65_ova.p_rate.wt), na.rm = T),
+  ) %>% 
+  ungroup() %>% 
+  select(-ends_with(c(".p_rate.wt", "_65_plus"))) %>% 
+  mutate(
+    # overall index: weighted product method
+    rtrft_need_indx = epc_lss_eql_d_prcnt*income_score_rate*hlth_vlnblty_dmain,
+    
+    # Index (excluding health vulnerability: weighted product method
+    rtrft_need_indx_mini = epc_lss_eql_d_prcnt*income_score_rate,
+    
+    # standardize domains and overall index
+    across(
+      c(epc_lss_eql_d_prcnt, income_score_rate, hlth_vlnblty_dmain, rtrft_need_indx, rtrft_need_indx_mini), .fns = list(z =datawizard::standardise, reltv_indx = rltv_indx),
+      .names = "{.col}_{.fn}"
+    ),
+    
+    # rank the index
+    rtrft_need_indx_rnk = min_rank(desc(rtrft_need_indx)),
+    rtrft_need_indx_mini_rnk = min_rank(desc(rtrft_need_indx_mini)),
+    
+    across(where(is.double), \(x) round(x, 4)),
+  ) %>% 
+  arrange(desc(rtrft_need_indx)) %>%
+  glimpse
+
+# rtrft_need_indx_v3 %>% 
+#   glimpse
+# 
+# rtrft_need_indx_v3 %>% 
+#   arrange(desc(rtrft_need_indx)) %>%
+#   View
+# 
+# rtrft_need_indx_v3 %>% 
+#   arrange(desc(rtrft_need_indx_mini)) %>%
+#   View
+
+# Export the declassified index. The condition-specific emergency-admission
+# columns are removed before the file is written to the publication folder.
+public_index <- rtrft_need_indx_v3_fll %>%
+  select(-any_of(c(
+    "asthma.p_rate",
+    "respiratory.p_rate",
+    "cvd.p_rate",
+    "burns_falls_65_ova.p_rate"
+  )))
+
+write_csv(
+  public_index,
+  file.path(outputs_dir, "housing_retrofit_need_index_lsoa_v3.csv")
+)
+write_csv(public_index, public_index_path)
+
+# # data prep for shiny app contd
+# rtrft_need_indx_v3 %>%
+#   select(LSOA11CD, LSOA11NM, LSOA21CD, LSOA21NM, hlth_vlnblty_dmain) %>% 
+#   write.csv(file = paste0(tmp_fld,"/hlth_vlnblty_dmain.csv"), row.names = F)
+
+
+```
+
+```{r read-public-index}
+# In a public run, this declassified file is the hand-off point past all
+# safeguarded processing.
+if (!file.exists(public_index_path)) {
+  stop(
+    "Missing ", public_index_path,
+    ". This declassified input must be included in the publication repository."
+  )
+}
+
+rtrft_need_indx_v3 <- read_csv(public_index_path, show_col_types = FALSE) %>% 
+  mutate(across(
+    all_of(c("epc_lss_eql_d_no", "rtrft_need_indx_rnk", "rtrft_need_indx_mini_rnk")), as.integer),
+    across(where(is.character), factor)
+    ) %>% 
+  glimpse
+```
+
+# Map and plot the Index of housing retrofit need
+
+## Import the shape file
+Use data at LSOA and Local Authority District levels
+Boundary data are retrieved at run time from: <https://geoportal.statistics.gov.uk/datasets/ons::lower-layer-super-output-areas-december-2011-boundaries-ew-bsc-v4/about>
+
+<https://geoportal.statistics.gov.uk/datasets/ons::local-authority-districts-december-2011-boundaries-ew-bgc-2/about>
+```{r geographic-boundaries}
+# lsoa_21_sf <-
+#   read_sf("open_data\\Lower_layer_Super_Output_Areas_December_2021_Boundaries_EW_BSC_V4_-5236167991066794441\\LSOA_2021_EW_BSC_V4.shp") %>% 
+#   filter(str_starts(LSOA21CD, "E")) %>%
+#   select(-c(LSOA21NMW, GlobalID)) %>%
+#   glimpse
+
+lsoa_11_sf <-
+  read_sf(
+    download_to_temp(source_urls$lsoa_2011_boundaries, ".geojson"),
+    quiet = TRUE
+  ) %>%
+  clean_names() %>%
+  rename(
+    LSOA11CD = lsoa11cd,
+    LSOA11NM = lsoa11nm,
+    BNG_E = bng_e,
+    BNG_N = bng_n,
+    LONG = long,
+    LAT = lat
+  ) %>%
+  filter(str_starts(LSOA11CD, "E")) %>%
+  select(-any_of(c("lsoa11nmw", "global_id", "fid", "shape_area", "shape_length"))) %>%
+  glimpse
+
+# check the coordinate system
+st_crs(lsoa_11_sf)
+
+lad11_sf <-
+  read_sf(
+    download_to_temp(source_urls$lad_2011_boundaries, ".geojson"),
+    quiet = TRUE
+  ) %>%
+  clean_names() %>%
+  filter(str_starts(lad11cd, "E")) %>%
+  select(-any_of(c("lad11nmw", "global_id", "fid", "shape_area", "shape_length"))) %>%
+  glimpse
+
+```
+
+## Map the Index
+
+Update: For better alignment with the data aggregation geographies utilised, and to mitigate missingness associated with misaligned aggregation zones, LSOA geographies have been reversed from 2021 to 2011
+
+```{r map-index}
+#spatialise the indicators
+lsoa_sf_full <-
+  lsoa_11_sf %>%
+  select(-LSOA11NM) %>% #to avoid duplication
+  left_join(rtrft_need_indx_v3, by = "LSOA11CD") %>%
+  glimpse
+
+# explore missingness
+lsoa_sf_full %>% 
+  st_drop_geometry() %>% 
+  ExpData(2)
+
+#possible colour schemes
+col_schm = c(
+  "-carto.tropic",
+  "carto.army_rose",
+  "-cols4all.pu_gn_div",
+  "-powerbi.divergent",
+  # "met.hokusai3", #-matplotlib.gn_bu, -kovesi.blue_cyan
+  "-matplotlib.pi_yg",
+  "hcl.green_orange",
+  "kovesi.cy_gy_or",
+  "kovesi.gn_wh_pu",
+  # "-cols4all.pu_gn_div",
+  "parks.olympic"
+)
+
+# cols4all::c4a_gui()
+
+# the map objects and pictures
+## Map by the Relative index
+for (i in seq.int(1, 3)) {
+  tictoc::tic()
+  if (i == 1) {
+    
+    indx = c("epc_lss_eql_d_prcnt_reltv_indx",
+             "income_score_rate_reltv_indx",
+             "hlth_vlnblty_dmain_reltv_indx",
+             "rtrft_need_indx_reltv_indx")
+    sffx = c("Energy Inefficiency", "Income Deprivation", "Health Vulnerability", "Retrofit Needs")
+    indtr_map_lst = list()
+  }
+  
+  cat("\nMapping", indx[i], "...")
+  
+  indtr_map_lst[[indx[i]]] <-
+    tm_shape(lsoa_sf_full) +
+    tm_polygons(
+      fill = indx[i],
+      fill.scale = tm_scale_intervals(
+        n = 7,
+        values = col_schm[i], #can also vary the colour scheme here
+        style = "fisher", #equal, pretty, jenks, fisher, quantile etc
+        midpoint = 1
+      ),
+      fill.legend = tm_legend(
+        title = paste0(sffx[i], "\n(Relative index)"),
+        position = tm_pos_in("LEFT", "TOP"),
+        item.r = 0,
+        reverse = T,
+        item.space = -0.2,
+        item.na.space = 0,
+        frame = F
+      ),
+      lwd = 0.0001,
+      col_alpha = 0.0 #opacity 0 = 100% transparent
+    ) +
+    tm_shape(lad11_sf) +
+    tm_borders(lwd=0.5) +
+    tm_layout(frame.r = 0,
+              panel.label.frame.r = 0
+      # inner.margins = c(0.02, 0.02, 0.02, 0.2)
+              )
+
+  if(i ==max(seq.int(1, 3))){
+
+    # use tmap_arrange to stitch maps of all 3 domains (on one row)
+    indtr_map_dmains <-
+    tmap_arrange(
+      indtr_map_lst[1:3],
+      nrow = 1,
+      outer.margins = 0.01
+    )
+
+    # save stitched map
+    cat("\nPlotting & saving mosaiced maps...")
+    tmap_save(
+      indtr_map_dmains,
+      filename =  paste0(outputs_dir, "\\indtr_map_dmains_v4_fshr.png"),
+      units = "cm",
+      height = 15,
+      width = 39,
+      asp = 0
+    )
+
+    tictoc::toc()
+  }
+  # tictoc::toc()
+}
+
+# Facet index map of mini and full index
+# Enable faceting for LAD maps
+lad11_fcet_sf <- 
+lad11_sf %>%
+  mutate(rtrft_need_indx_z = NA, rtrft_need_indx_mini_z = NA) %>% 
+  # filter(lad11nm == "Liverpool") %>% 
+  pivot_longer(
+    cols = c(rtrft_need_indx_z, rtrft_need_indx_mini_z),
+    names_to = "Index_composition",
+    values_to = "rtrft_need_indx_reltv",
+    values_transform = as.double
+  ) %>% #glimpse
+  glimpse
+
+# make map based on relative index
+
+# # Conventional vs Enhanced index map (on thesame scale)
+# indtr_map_fcet <-
+#   lsoa_sf_full %>%
+#   pivot_longer(
+#   cols = c(rtrft_need_indx_mini_reltv_indx, rtrft_need_indx_reltv_indx),
+#   names_to = "Index_composition",
+#   values_to = "rtrft_need_indx_reltv",
+#   values_transform = as.double
+# ) %>% 
+#     # glimpse
+#   tm_shape() +
+#   tm_polygons(
+#     fill = "rtrft_need_indx_reltv",
+#     fill.scale = tm_scale_intervals(
+#       n = 10,
+#       values = c(paletteer::paletteer_c("scico::vik", n = 10)), #was "-cols4all.pu_gn_div"
+#       style = "fisher", #equal, pretty, fisher, jenks, quantile etc
+#       midpoint = 1 #for z-score, change to 0
+#     ),
+#     fill.legend = tm_legend(
+#       title = "Relative Index", # paste0(sffx[i]),
+#       # title.align = "right",
+#       position = tm_pos_out(pos.v = "top", pos.h = "right"),
+#       item.r = 0,
+#       reverse = T,
+#       item.space = -0.2,
+#       item.na.space = 0,
+#       frame = F
+#     ),
+#     lwd = 0.0001,
+#     col_alpha = 0.0  #opacity 0 = 100% transparent
+#   ) +
+#   # needs duplication to account for facets
+#   tm_shape(lad11_fcet_sf) +
+#   tm_borders(lwd=0.5) +
+#   tm_facets_wrap(by = "Index_composition", ncol = 2) +
+#   tm_layout(panel.labels = c("Conventional Index", "Enhanced Index"),
+#             between_margin = 0.2,
+#             frame.r = 0,
+#             panel.label.frame.r = 0
+#     # inner.margins = c(0.02, 0.02, 0.02, 0.2)
+#             )
+# 
+# # save map as png file
+# tmap_save(
+#   indtr_map_fcet,
+#   paste0(outputs_dir, "\\lsoa_need_relv_indx_maps_v4_fshr.png"),
+#   units = "cm",
+#   height = 13,
+#   width = 26,
+#   asp = 0,
+#   # dpi = 600,
+#   # scale = 0.85
+# )
+
+# Conventional vs Enhanced index map (on different scales)
+
+indtr_map_fcet1 <-
+  lsoa_sf_full %>%
+  # mutate(reltv_indx_diff = rtrft_need_indx_reltv_indx - rtrft_need_indx_mini_reltv_indx) %>% 
+  tm_shape() +
+  tm_polygons(
+    fill = c("rtrft_need_indx_mini_reltv_indx", "rtrft_need_indx_reltv_indx"),
+    fill.scale = list(tm_scale_intervals(
+      n = 10,
+      values = "-cols4all.pu_gn_div", #was 
+      style = "fisher", #equal, pretty, fisher, jenks, quantile etc
+      midpoint = 1 #for z-score, change to 0
+    ),
+    tm_scale_intervals(
+      n = 10,
+      values = c(paletteer::paletteer_c("scico::vik", n = 10)), #"-cols4all.pu_gn_div"), #was 
+      style = "fisher", #equal, pretty, fisher, jenks, quantile etc
+      midpoint = 1 #for z-score, change to 0
+    )
+    ),
+    # fill.free = T,
+    fill.legend = list(tm_legend(
+      title = "Relative Index", # paste0(sffx[i]),
+      # title.align = "right",
+      position = tm_pos_in(pos.v = "top", pos.h = "left"),
+      item.r = 0,
+      reverse = T,
+      item.space = -0.2,
+      item.na.space = 0,
+      frame = F
+    ),
+    tm_legend(
+      title = "Relative Index", # paste0(sffx[i]),
+      # title.align = "right",
+      position = tm_pos_in(pos.v = "top", pos.h = "left"),
+      item.r = 0,
+      reverse = T,
+      item.space = -0.2,
+      item.na.space = 0,
+      frame = F
+    )
+    ),
+    lwd = 0.0001,
+    col_alpha = 0.0  #opacity 0 = 100% transparent
+  ) +
+  # needs duplication to account for facets
+  tm_shape(lad11_fcet_sf) +
+  tm_borders(lwd=0.5) +
+  tm_layout(panel.labels = c("Conventional Index", "Enhanced Index"),
+            between_margin = 0.2,
+            frame.r = 0,
+            panel.label.frame.r = 0
+    # inner.margins = c(0.02, 0.02, 0.02, 0.2)
+            )
+
+# save map as png file
+tmap_save(
+  indtr_map_fcet1,
+  paste0(outputs_dir, "\\lsoa_need_relv_indx1_maps_v4_fshr.png"),
+  units = "cm",
+  height = 13,
+  width = 22,
+  asp = 0,
+  # dpi = 600,
+  # scale = 0.85
+)
+
+# Enhanced index plus difference map
+
+indtr_map_fcet2 <-
+  lsoa_sf_full %>%
+  mutate(reltv_indx_diff = rtrft_need_indx_reltv_indx - rtrft_need_indx_mini_reltv_indx) %>% 
+  tm_shape() +
+  tm_polygons(
+    fill = c("rtrft_need_indx_reltv_indx", "reltv_indx_diff"),
+    fill.scale = list(tm_scale_intervals(
+      n = 10,
+      values = c(paletteer::paletteer_c("scico::vik", n = 10)), #"-cols4all.pu_gn_div"), #was 
+      style = "fisher", #equal, pretty, fisher, jenks, quantile etc
+      midpoint = 1 #for z-score, change to 0
+    ),
+    tm_scale_intervals(
+      n = 9,
+      values = c(paletteer::paletteer_d("PrettyCols::PurpleTangerines", n = 9)), #"-cols4all.pu_gn_div"), #was 
+      style = "fisher", #equal, pretty, fisher, jenks, quantile etc
+      midpoint = 0 #for z-score, change to 0
+    )
+    ),
+    # fill.free = T,
+    fill.legend = list(tm_legend(
+      title = "Relative Index", # paste0(sffx[i]),
+      # title.align = "right",
+      position = tm_pos_in(pos.v = "top", pos.h = "left"),
+      item.r = 0,
+      reverse = T,
+      item.space = -0.2,
+      item.na.space = 0,
+      frame = F
+    ),
+    tm_legend(
+      title = "Index Difference", # paste0(sffx[i]),
+      # title.align = "right",
+      position = tm_pos_in(pos.v = "top", pos.h = "left"),
+      item.r = 0,
+      reverse = T,
+      item.space = -0.2,
+      item.na.space = 0,
+      frame = F
+    )
+    ),
+    lwd = 0.0001,
+    col_alpha = 0.0  #opacity 0 = 100% transparent
+  ) +
+  # needs duplication to account for facets
+  tm_shape(lad11_fcet_sf) +
+  tm_borders(lwd=0.5) +
+  # tm_facets_wrap(by = "Index_composition", ncol = 2) +
+  tm_layout(panel.labels = c("Conventional Index", "Difference: Enhanced - Conventional Index"),
+            between_margin = 0.2,
+            frame.r = 0,
+            panel.label.frame.r = 0
+    # inner.margins = c(0.02, 0.02, 0.02, 0.2)
+            )
+
+# save map as png file
+tmap_save(
+  indtr_map_fcet2,
+  paste0(outputs_dir, "\\lsoa_need_relv_indx2_maps_v4_fshr.png"),
+  units = "cm",
+  height = 13,
+  width = 22,
+  asp = 0,
+  # dpi = 600,
+  # scale = 0.85
+)
+
+gc()
+save.image()
+
+```
+
+# Statistical description & plots
+
+## Boxplots
+### Entire England
+```{r}
+
+# LSOA11toLAD20 contains 34,753 lsoas, while the lsoa21 contains 35,797 zones
+
+rtrft_lsoa11_lad <- 
+  lsoa_sf_full %>% 
+  st_drop_geometry() %>% 
+  select(-c(BNG_E, BNG_N, LAT, LONG)) %>%
+  # glimpse
+  mutate(
+    LAD20NM = LAD20NM %>% factor() %>% fct_reorder(rtrft_need_indx_reltv_indx, .desc = F, .na_rm = T) 
+  ) %>% 
+  group_by(LAD20NM) %>% 
+  # compute LAD median & mean
+  mutate(
+    rtrft_lad_mdn_indx = median(rtrft_need_indx, na.rm = T),
+    rtrft_lad_reltv_indx_mean = mean(rtrft_need_indx_reltv_indx, na.rm = T)
+  ) %>%
+  ungroup() %>% 
+  # arrange LAD by mean of index (SD)
+  arrange(desc(rtrft_lad_mdn_indx), LAD20NM) %>%
+  # for ploting
+  mutate(
+    lad_rnk = dense_rank(desc(LAD20NM)),
+    lad_rnk2 = as.character(lad_rnk) %>% str_pad(width = 3, side = 'left', pad = 0),
+    LAD20NM_rnk = paste0(LAD20NM, " [", lad_rnk2, "]"), 
+    lad_facet = case_match(lad_rnk,
+                           c(1:104)~1,
+                           c(105:209)~2,
+                           c(210:314)~3,
+                           .default = lad_rnk),
+    # tidyup
+    lad_rnk2 = NULL
+  ) %>% 
+  glimpse
+
+# rtrft_lsoa11_lad %>% 
+#   glimpse
+
+# 314 LAs
+length(unique(rtrft_lsoa11_lad$LAD20CD))
+
+# rtrft_lsoa11_lad %>% glimpse
+# use boxplots to show variations in neighbourhood retrofit needs in local authorities (rtrft_need_indx_reltv_indx, rtrft_need_indx_z)
+rtrft_lsoa11_lad_bxplt <-
+  rtrft_lsoa11_lad %>% 
+  ggplot(aes(y = forcats::fct_reorder(LAD20NM_rnk, rtrft_need_indx_reltv_indx, .desc = F, .na_rm = T), x = rtrft_need_indx_reltv_indx)) + #
+  # for relative index, intercept = 1, but for z-score, intercept = 0
+  geom_vline(xintercept = 1, linetype=6, colour = "black", linewidth = 0.6) + # A
+  # geom_vline(xintercept = 0, linetype=6, colour = "black", linewidth = 0.6) +
+  geom_boxplot(aes(fill = lad_rnk,
+                   colour = lad_rnk,
+                   group = LAD20NM_rnk),
+               alpha = 0.5,
+               outlier.size = 0.6,
+               outlier.alpha = 0.3,
+               linewidth = 0.2,
+               show.legend = F
+  )+
+  scale_fill_gradient(low = "brown", high = "blue") +
+  scale_color_gradient(low = "brown", high = "blue") +
+  # coord_cartesian(xlim = c(-1,10)) + #or use NA
+  # scale_x_continuous(breaks = scales::breaks_width(2), minor_breaks = NULL) +
+  facet_wrap(vars(lad_facet), ncol= 3,
+             scale = "free_y",
+             labeller = as_labeller(c(`1`="1/3", `2`="2/3", `3`="3/3"))
+  ) +
+  labs(
+    title = "Variations in Neighbourhood Need for Housing Retrofits in England's Local Authorities",
+    # subtitle = "xxx",
+    x = "Relative Index of Neighbourhood Need", # A
+    # x = "Housing Retrofit Needs Index (z-score)", #B
+    y = "Local Authority"
+  ) +
+  theme_linedraw() +
+  theme(
+    title = element_text(face = "bold", size = 12),
+    axis.title = element_text(face = "bold", size = 10),
+    axis.text.y = element_text(size = 6),
+    panel.grid.major = element_line(linewidth = 0.05, colour = "grey40"),
+    strip.text = element_text(face = "bold", size = 10)
+  )
+
+# ggplotly(rtrft_lsoa11_lad_bxplt)
+
+ggsave(
+  # plot b uses the index z-score, instead of the relative index
+  filename = paste0(outputs_dir,"\\rtrft_lsoa11_lad_bxplt_v3a.png"),
+  # filename = paste0(outputs_dir,"\\rtrft_lsoa11_lad_bxplt_v3b.png"),
+  plot = rtrft_lsoa11_lad_bxplt,
+  dpi = 600,
+  units = "cm",
+  height = 25,
+  width = 35,
+  # scale = 1.5,
+  )
+```
+
+### Deciles of LAs (Top & bottom)
+Because of the large number of LSOAs, we focus only on the top and bottom deciles in this plot.
+```{r}
+
+# Ensure the deciles of mini and full index is computed at the lsoa and median index values are available at the lad levels
+rtrft_lsoa11_lad %<>% #glimpse
+      mutate(
+      mini_lsoa_indx_dcl = ntile(desc(rtrft_need_indx_mini), 10),
+    fll_lsoa_indx_dcl = ntile(desc(rtrft_need_indx), 10)) %>% 
+  group_by(LAD20CD) %>% 
+    mutate(
+    rtrft_lad_mdn_mini_indx = median(rtrft_need_indx_mini, na.rm = T)
+    ) %>% 
+  ungroup() %>% 
+  glimpse
+
+# strip to lad geographies and compute lad deciles
+lad_indx_mdn_dcl <-
+rtrft_lsoa11_lad %>%  
+  dplyr::distinct(LAD20CD, .keep_all = T) %>% #glimpse
+  mutate(
+    cvnl_lad_indx_dcl = ntile(desc(rtrft_lad_mdn_mini_indx), 10),
+    fll_lad_indx_dcl = ntile(desc(rtrft_lad_mdn_indx), 10)
+         ) %>%
+    select(LAD20CD, cvnl_lad_indx_dcl, fll_lad_indx_dcl) %>%
+  glimpse
+
+#   1st and 10th decides of LSOAs as boxplots at LAD level
+rtrft_lsoa11_lad_bxplt_dcl <-
+  rtrft_lsoa11_lad %>% 
+  select(-c(starts_with(c("cvnl_lad_indx_dcl", "fll_lad_indx_dcl")))) %>%
+  left_join(lad_indx_mdn_dcl, by = "LAD20CD") %>%
+  filter(fll_lad_indx_dcl %in% c(1, 10)) %>% #glimpse
+# frq(cvnl_lad_indx_dcl, fll_lad_indx_dcl)
+  ggplot(aes(y = forcats::fct_reorder(LAD20NM_rnk, rtrft_need_indx_reltv_indx, .desc = F, .na_rm = T), x = rtrft_need_indx_reltv_indx)) + #
+  # for relative index, intercept = 1, but for z-score, intercept = 0
+  geom_vline(xintercept = 1, linetype=6, colour = "black", linewidth = 0.6) + # A
+  # geom_vline(xintercept = 0, linetype=6, colour = "black", linewidth = 0.6) +
+  geom_boxplot(aes(fill = lad_rnk,
+                   colour = lad_rnk,
+                   group = LAD20NM_rnk),
+               alpha = 0.5,
+               outlier.size = 0.6,
+               outlier.alpha = 0.3,
+               linewidth = 0.2,
+               show.legend = F
+  )+
+  scale_fill_gradient(low = "brown", high = "blue") +
+  scale_color_gradient(low = "brown", high = "blue") +
+  # coord_cartesian(xlim = c(-1,10)) + #or use NA
+  # scale_x_continuous(breaks = scales::breaks_width(2), minor_breaks = NULL) +
+  facet_wrap(vars(fll_lad_indx_dcl), ncol= 2,
+             scale = "free",
+             labeller = as_labeller(c(`1`="Top decile", `10`="Bottom decile"))
+  ) +
+  labs(
+    title = "Variations in Neighbourhood Need for Housing Retrofits in England's Local Authorities",
+    # subtitle = "Top and bottom deciles of Need",
+    x = "Relative Index of Neighbourhood Need", # A
+    # x = "Housing Retrofit Needs Index (z-score)", #B
+    y = "Local Authority"
+  ) +
+  theme_linedraw() +
+  theme(
+    title = element_text(face = "bold", size = 11),
+    axis.title = element_text(face = "bold", size = 10),
+    axis.text.y = element_text(size = 7),
+    panel.grid.major = element_line(linewidth = 0.05, colour = "grey40"),
+    strip.text = element_text(face = "bold", size = 10)
+  )
+
+ggsave(
+  filename = paste0(outputs_dir,"\\rtrft_lsoa11_lad_bxplt_dcl_v4.png"),
+  plot = rtrft_lsoa11_lad_bxplt_dcl,
+  dpi = 600,
+  units = "cm",
+  height = 12,
+  width = 25,
+  # scale = 1.5,
+  )
+
+```
+
+## Stats of index by LAs
+Descriptive statistics of health-sensitive index values aggregated to the LA level. 
+```{r}
+
+indx_la_stats <-
+  rtrft_lsoa11_lad %>% 
+  centrality_description(x=LAD20NM,
+                           y=rtrft_need_indx_reltv_indx,
+                           type = "parametric") %>% 
+  arrange(desc(rtrft_need_indx_reltv_indx)) %>% #glimpse
+  rename(rtrft_need_indx_reltv_indx_mean = rtrft_need_indx_reltv_indx) %>% 
+  select(-c(expression, n.expression)) %>% 
+  mutate(
+    across(where(is.numeric), \(x) round(x, 4))
+  ) %>%
+  glimpse
+
+# export index at LA level
+write_csv(indx_la_stats, paste0(outputs_dir, "\\housing_retrofit_need_index_LA_v3b.csv"))
+
+```
+
+# Associated inferential stats
+Perform some complementary inferential statistics based on the foregoing boxplots of the indicators, such as ANOVA & student t tests.
+
+## Heteroscedastic one-way ANOVA for trimmed means
+```{r}
+# One-way ANOVA (btw subjects design)
+# ensure every LA has more than one LSOA to allow for parametric one-way ANOVA. This means dropping "Isles of Scilly" prior to computation, otherwise an error 'not enough observations' is returned.
+rtrft_lsoa11_lad %>% 
+  group_by(LAD20NM) %>% 
+  summarise(lsoa_frq = n()) %>% 
+  ungroup() %>% 
+  arrange(lsoa_frq) %>% 
+  glimpse
+
+oneway_anova <- statsExpressions::oneway_anova(rtrft_lsoa11_lad %>% filter(LAD20NM != "Isles of Scilly"),
+                           x=LAD20NM,
+                           y=rtrft_need_indx_reltv_indx,
+                           type = "robust") #"parametric"
+oneway_anova
+
+oneway_anova_df <- 
+oneway_anova %>%
+  select(-expression) %>% 
+  mutate(across(where(is.numeric), \(x) round(x, 4))) %>% 
+  pivot_longer(cols = everything(),
+               names_to = "params",
+               values_to = '1way_ANOVA',
+               values_transform = as.character
+               ) %>% 
+    view("anova")
+
+write.csv(oneway_anova_df, paste0(outputs_dir, "\\oneway_anova_df_v3.csv"))
+
+# for reporting/interpretation purpose
+aov(rtrft_need_indx_reltv_indx ~ LAD20NM, data = rtrft_lsoa11_lad %>% filter(LAD20NM != "Isles of Scilly")) %>% 
+  report::report()
+```
+The ANOVA (formula: rtrft_need_indx_z ~ LAD20NM) suggests that:
+
+  - The main effect of LAD20NM is statistically significant and large (F(312, 32530) = 46.37, p < .001; Eta2
+= 0.31, 95% CI [0.30, 1.00])
+
+Effect sizes were labelled following Field's (2013) recommendations.
+
+## Pairwise comparison of the index between LAs
+```{r}
+# pairwise comparisons
+
+pw_cmprn <- pairwise_comparisons(
+  rtrft_lsoa11_lad %>% filter(LAD20NM != "Isles of Scilly"),
+  x=LAD20NM,
+  y=rtrft_need_indx_reltv_indx ,
+  type = "parametric",
+  var.equal = T
+)
+
+# of all 48,828 pairwise comparisons between LAs, 20,659 were statistically significant with p values of less than 0.05 as shown in the table below
+la_pw_comp <- 
+pw_cmprn %>%
+  select(-expression) %>% 
+  filter(p.value < 0.05) %>%
+  mutate(
+    across(where(is.numeric), \(x) round(x, 4))
+  ) %>% 
+  view("pairwise")
+  # glimpse
+
+# export pairwise comparisons of neighbourhood index of needs in LAs
+write_csv(la_pw_comp, paste0(outputs_dir,"\\pairwise_t_test_of_need_index_LA_v3.csv"))
+
+gc()
+save.image()
+```
+
+# Enhanced index Correlation with the IMD (sub)domains
+In this section, explore the bivariate association between the developed retrofit Index and other publicly available neighbourhood metrics to show that it is capturing a distinct aspect of place, relevant to population health and public policy.
+
+To this end, correlation analysis between the index and other metrics will be performed.
+Candidate metrics, include domains of the IMD, housing energy efficiency data, and indicators used to compute th energy deprivation classification.
+
+```{r}
+# data joins and var selections
+rtft_indx_corr <- 
+  rtrft_need_indx_v3 %>% 
+  select(LSOA11CD, rtrft_need_indx, epc_lss_eql_d_prcnt) %>% 
+  left_join(imd2019, by = c("LSOA11CD" = "lsoa_code_2011")) %>% 
+  # drop some irrelevant IMD indicators
+  select(-c(income_deprivation_affecting_children_index_idaci_score_rate, income_deprivation_affecting_older_people_idaopi_score_rate, children_and_young_people_sub_domain_score, where(is.character))) %>% 
+  glimpse
+
+
+#plot only significant correlations with Retrofit index
+
+rtft_indx_corr_plt_v3 <-
+  rtft_indx_corr %>% 
+  # select(CIF_rsdl_1, all_of(obj3_covars)) %>%
+  # rename(., any_of(nlp_rename_lookup)) %>%
+  lares::corr_var(rtrft_need_indx,
+           method = "pearson",
+           top = 50,
+           zeroes = F,
+           ranks = T,
+           # max_pvalue = 0.15, #significant at the 95% confidence interval
+           save = F)
+
+# extract the correlation table of the plots
+rtft_indx_corr_df <-
+  rtft_indx_corr_plt_v3$data %>%
+  select(-c(pos, hjust)) %>% 
+  mutate(across(where(is.double), \(x) round(x, 3)),
+         variables = str_split_i(variables, " ", 2)
+         ) %>% 
+  view
+
+```
+
+# Sensitivity to health vulnerabiltiy
+Show changes in retrofit needs prior to and after the inclusion of health vulnerability. Cleveland dot plots (to show difference in need value), heatmaps and sankey plots (to show changes in deciles) will be used, analysis can be performed at both LSOA and LA levels.
+
+## All of the England
+```{r}
+# there are 32,844 LSOAs in england, so I show sensitivity of the top 50 to the inclusion of health vulnerability in the index
+
+rtrft_need_indx_v3c <- 
+rtrft_need_indx_v3 %>% 
+  select(c(LSOA11NM, rtrft_need_indx_reltv_indx, rtrft_need_indx_mini_reltv_indx, ends_with("_rnk"))) %>%
+  mutate(indx_reltv_indx_diff = rtrft_need_indx_mini_reltv_indx-rtrft_need_indx_reltv_indx,
+         indx_rnk_diff = rtrft_need_indx_mini_rnk-rtrft_need_indx_rnk,
+         indx_reltv_indx_diff_cat = if_else(rtrft_need_indx_reltv_indx < rtrft_need_indx_mini_reltv_indx, "Decrease", "Increase") %>% factor,
+         indx_rnk_diff_cat = if_else(rtrft_need_indx_mini_rnk < rtrft_need_indx_rnk, "Decrease", "Increase") %>% factor,
+         indx_reltv_indx_diff_abs = abs(indx_reltv_indx_diff),
+         indx_rnk_diff_abs = abs(indx_rnk_diff)
+         ) %>% 
+  glimpse
+
+# rtrft_need_indx_v3 %>% glimpse
+
+indx_hlth_vuln_plt <- 
+rtrft_need_indx_v3c %>% 
+  slice_max(order_by = rtrft_need_indx_reltv_indx,
+            n = 100) %>% 
+  mutate(lsoa_facet = case_match(rtrft_need_indx_rnk,
+                                c(1:50)~1,
+                                c(51:100)~2,
+                                .default = rtrft_need_indx_rnk)
+         ) %>%
+  ggplot(aes(x=reorder(LSOA11NM, rtrft_need_indx_reltv_indx))) +
+  geom_segment(aes(xend=LSOA11NM,
+                   # y=rtrft_need_indx_mini_reltv_indx,
+                   # yend=rtrft_need_indx_reltv_indx,
+                   
+                    y = if_else(
+                    indx_reltv_indx_diff_cat == "Increase",
+                    rtrft_need_indx_mini_reltv_indx + 0.03,
+                    rtrft_need_indx_mini_reltv_indx - 0.03
+                  ),
+                  yend = if_else(
+                    indx_reltv_indx_diff_cat == "Increase",
+                    rtrft_need_indx_reltv_indx - 0.04,
+                    rtrft_need_indx_reltv_indx + 0.03
+                  ),
+                   
+                   color=indx_reltv_indx_diff_cat),
+               arrow = arrow(length = unit(0.2, "cm")),
+               ) +
+    # geom_point(aes(y=rtrft_need_indx_reltv_indx), color=rgb(0.2,0.7,0.1,1.0), size=5.5
+    #          ) +
+  geom_point(
+    aes(
+      y = rtrft_need_indx_reltv_indx,
+      fill = "Health-sensitive"
+    ),
+    shape = 21,
+    size = 6,
+    alpha = 0.8,
+    colour = "grey20",
+    stroke = 0.3
+  ) +
+  geom_text(
+    aes(y = rtrft_need_indx_reltv_indx, label = rtrft_need_indx_rnk),
+    fontface = "bold",
+    size = 3, color = "grey90"
+  ) +
+  # geom_point(aes(y=rtrft_need_indx_mini_reltv_indx), color=rgb(0.7,0.2,0.1,1.0), size=5.5) +
+  geom_point(
+    aes(
+      y = rtrft_need_indx_mini_reltv_indx,
+      fill = "Conventional"
+    ),
+    shape = 21,
+    size = 6,
+    alpha = 0.8,
+    colour = "grey20",
+    stroke = 0.3
+  ) +
+  geom_text(
+    aes(y = rtrft_need_indx_mini_reltv_indx, label = rtrft_need_indx_mini_rnk),
+    fontface = "bold",
+    size = 2.5, color = "grey90"
+  ) +
+  scale_color_manual(
+    name = "Change from conventional\nto health-sensitive index",
+    values = c(
+      "Increase" = rgb(0.7, 0.2, 0.1, 1.0),
+      "Decrease" = rgb(0.2, 0.7, 0.1, 1.0)
+    )
+  ) +
+  scale_fill_manual(
+    name = "Index type",
+    values = c(
+      "Conventional" = rgb(0.7, 0.2, 0.1, 1.0),
+      "Health-sensitive" = rgb(0.2, 0.7, 0.1, 1.0)
+    )
+  ) +
+  coord_flip()+
+  # guides(color =guide_legend(title = "Change from\nmini to full index")) +
+  theme_linedraw() +
+  facet_wrap(vars(lsoa_facet), ncol= 2,
+             scale = "free",
+             labeller = as_labeller(c(`1`="Rank 1 - 50", `2`="Rank 51 - 100"#
+                                      # `3`="Third 1/3"
+                                      ))
+  ) +
+  theme(
+    # title = element_text(face = "bold", size = 10),
+    # axis.title = element_text(face = "bold", size = 8),
+    # axis.text.y = element_text(size = 6),
+    panel.grid.major = element_line(linewidth = 0.05, colour = "grey40"),
+    legend.position = "bottom"
+  ) +
+  labs(
+    title = "Sensitivity of Retrofits Needs to Health Vulnerability",
+    subtitle = "Top 100 Neighbourhoods with the Highest Need in England",
+    y = "Relative Index of Need",
+    x = "Neighbourhood (ordered by full index)",
+    caption = "Labels of the dots represent neighbourhood ranks"
+  )
+indx_hlth_vuln_plt
+
+# save plot
+ggsave(
+  filename = paste0(outputs_dir,"\\sntvty_indx_hlth_vuln_plt_v3.png"),
+  plot = indx_hlth_vuln_plt,
+  dpi = 600,
+  units = "cm",
+  height = 28,
+  width = 30,
+  # scale = 1.5,
+  )
+
+# notice that in the mini index, numerous (237) neighbourhodds are ranked 1. The is a consequence of the winsorization which capped extreme EPC and income deprivation scores to thesame values.
+
+
+gc()
+save.image()
+```
+
+## Update with LSOA to Region lookup
+source <https://geoportal.statistics.gov.uk/datasets/ons::lsoa-2011-to-buasd-to-bua-to-lad-to-rgn-december-2011-best-fit-lookup-in-ew/about>
+```{r region-lookup}
+# LSOA to region mapping
+lsoa_11_to_rgn <- 
+  read_csv(source_urls$lsoa_2011_to_region, show_col_types = FALSE) %>%
+  select(starts_with(c("LSOA11", "LAD11", "RGN11")), -ends_with(c("11NMW", "11NMW"))) %>%
+  glimpse
+
+# lsoa_11_to_rgn %>% glimpse
+```
+
+## Add regions, deciles and export data
+THe is exported for use by the source r scipt for producing revised plots (heatmaps and sankey plots) below.
+```{r}
+rtrft_lsoa11_lad <- 
+rtrft_lsoa11_lad %>% 
+  select(-c(starts_with(c("RGN11NM", "RGN11CD")))) %>% 
+  left_join(lsoa_11_to_rgn %>% select(-c(LSOA11NM, LAD11CD, LAD11NM)), by = "LSOA11CD") %>%
+  select(-c(starts_with(c("cvnl_lad_indx_dcl", "fll_lad_indx_dcl")))) %>%
+  left_join(lad_indx_mdn_dcl, by = "LAD20CD") %>%
+  glimpse
+
+# used to produce bolt-on plots of decile transitions
+rtrft_lsoa11_lad %>% 
+  write_csv(paste0(outputs_dir,"\\rtrft_lsoa11_lad_v4.csv"))
+```
+
+## Sensitivity plots: Heatmaps + Sankey plots
+```{r}
+
+# export bivariate correlation between the retrofits needs index and indicators of the IMD
+write_csv(rtft_indx_corr_df %>% 
+  mutate(across(where(is.double), \(x) round(x, 3))
+         ),
+  paste0(outputs_dir,"\\rtft_indx_imd_corr_df.csv")
+  )
+
+# create rtft_indx_imd_corr_df.csv and rtrft_lsoa11_lad_v4.csv before running the next line
+
+source("scripts/create_retrofit_index_publication_plots_v2.R")
+```
+
+
