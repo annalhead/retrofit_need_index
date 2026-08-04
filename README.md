@@ -27,6 +27,7 @@ sensitivity analyses, and publication figures.
 | [`open_data/`](open_data/) | Small public inputs retained in the repository, including the manually downloaded Nomis energy-efficiency extract and the declassified index hand-off file. See the [data guide](open_data/README.md). |
 | [`scripts/`](scripts/) | Main R Markdown analysis and the sourced publication-plot script. See the [script guide](scripts/README.md). |
 | [`outputs/`](outputs/) | Derived tables, maps, sensitivity plots, heat maps, and Sankey diagrams used in or supporting the manuscript and supplement. See the [output guide](outputs/README.md). |
+| `housing_retrofits_final.Rproj` | RStudio project file; opening it sets the repository root as the working project. |
 | `.gitignore` | Excludes R/RStudio session files and large public source files that the analysis downloads when required. |
 | `.Rhistory` and `.Rproj.user/` | Local R/RStudio session metadata. These are ignored by Git and are not part of the publication repository. |
 
