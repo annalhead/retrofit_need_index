@@ -1,4 +1,5 @@
-The main output for this piece of work is a household-level health-sensitive retrofit need index, aggregated to LSOA-level from Cheshire & Merseyside ICB for 2025.
+The main output for this piece of work is a household-level health-sensitive retrofit need index, aggregated to LSOA-level from Cheshire & Merseyside ICB for 2025. Aggregated outputs can be shared on request subject to information governance review.
+
 This index comprises three domains calculated at household-level:
 1. Health vulnerability
 2. Age-group vulnerability
@@ -35,3 +36,4 @@ Variables:
 - imd_dec: IMD decile [1 = most deprived] 
 - imd_inc_score: IMD income deprivation score
 
+A bivariate map compares the household-level index to the neighbourhood-level index.
