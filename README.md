@@ -14,7 +14,6 @@ The analysis compares:
 - an **enhanced (health-sensitive) index**, which additionally incorporates
   population health vulnerability.
 
-
-  This repository contains two sub-directories:
-  - Neighbourhood_index: this is the main analysis in the paper. It creates a national neighbourhood-level housing retrofit index for England, using neighbourhood-level (LSOA) data
-  - Household_index: this is for validation. It creates a household-level housing retrofit index for Cheshire & Merseyside, using household-level data, aggregated back to neighbourhood-level 
+This repository contains two sub-directories:
+- Neighbourhood_index: this is the main analysis in the paper. It creates a national neighbourhood-level housing retrofit index for England, using neighbourhood-level (LSOA) data
+- Household_index: this is for validation. It creates a household-level housing retrofit index for Cheshire & Merseyside, using household-level data, aggregated back to neighbourhood-level 
